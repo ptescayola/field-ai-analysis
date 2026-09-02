@@ -1,0 +1,48 @@
+{
+  "field": {
+    "id": "FIELD-001",
+    "name": "Son Puig",
+    "location": {
+      "lat": 39.62,
+      "lng": 2.91
+    },
+    "area_hectares": 4.2
+  },
+  "crop": {
+    "type": "tomato",
+    "variety": "ramallet",
+    "planting_date": "2026-04-15",
+    "growth_stage": "fruit_development"
+  },
+  "soil": {
+    "type": "loam",
+    "moisture_percent": 31,
+    "temperature_c": 24.8,
+    "ph": 6.7
+  },
+  "weather": {
+    "temperature_c": 29,
+    "humidity_percent": 68,
+    "rain_last_7_days_mm": 3,
+    "forecast": [
+      {
+        "day": "2026-09-02",
+        "rain_mm": 0,
+        "max_temperature_c": 30
+      },
+      {
+        "day": "2026-09-03",
+        "rain_mm": 12,
+        "max_temperature_c": 27
+      }
+    ]
+  },
+  "vegetation": {
+    "ndvi": 0.72,
+    "ndvi_previous_week": 0.76
+  },
+  "observations": [
+    "Some yellow leaves detected in the north-west area",
+    "No visible pests reported"
+  ]
+}
