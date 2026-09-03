@@ -5,7 +5,7 @@
   "description": "AI agronomic copilot — field data analysis with prompt-based agents",
   "scripts": {
     "build": "tsc",
-    "vercel-build": "npm run build && npm run build --prefix app",
+    "vercel-build": "node scripts/vercel-build.mjs",
     "start": "node dist/presentation/http/server.js",
     "api": "tsx backend/presentation/http/server.ts",
     "cli": "tsx backend/presentation/cli/index.ts",

@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "installCommand": "npm install && npm install --prefix app",
-  "buildCommand": "npm run vercel-build",
+  "installCommand": "if [ -f scripts/vercel-install.mjs ]; then node scripts/vercel-install.mjs; else node ../scripts/vercel-install.mjs; fi",
+  "buildCommand": "if [ -f scripts/vercel-build.mjs ]; then node scripts/vercel-build.mjs; else node ../scripts/vercel-build.mjs; fi",
   "outputDirectory": "app/dist",
   "functions": {
     "api/index.ts": {
