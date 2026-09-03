@@ -6,7 +6,7 @@
   "functions": {
     "app/api/index.ts": {
       "maxDuration": 60,
-      "includeFiles": "{data,agents,backend-dist}/**"
+      "includeFiles": "{data,agents}/**"
     }
   },
   "rewrites": [
