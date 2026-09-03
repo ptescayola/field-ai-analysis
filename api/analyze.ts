@@ -4,37 +4,40 @@ import {
   handleOptions,
   isValidFieldFile,
   jsonResponse,
+  type VercelRequest,
+  type VercelResponse,
 } from "./_lib.js";
 
 export const config = {
   maxDuration: 60,
 };
 
-export default async function handler(request: Request): Promise<Response> {
-  const options = handleOptions(request);
-  if (options) return options;
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse
+): Promise<void> {
+  if (handleOptions(req, res)) return;
 
-  if (request.method !== "POST") {
-    return errorResponse(request, "Method not allowed", 405);
+  if (req.method !== "POST") {
+    errorResponse(req, res, "Method not allowed", 405);
+    return;
   }
 
   let file = "field-001.json";
-  try {
-    const body = (await request.json()) as { file?: string };
-    if (body.file) file = body.file;
-  } catch {
-    return errorResponse(request, "Invalid JSON body", 400);
+  if (req.body && typeof req.body === "object" && "file" in req.body) {
+    file = String((req.body as { file?: string }).file ?? file);
   }
 
   if (!isValidFieldFile(file)) {
-    return errorResponse(request, "Invalid field", 400);
+    errorResponse(req, res, "Invalid field", 400);
+    return;
   }
 
   try {
     const result = await getApplication().analyzeField.execute(file);
-    return jsonResponse(request, result);
+    jsonResponse(req, res, result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Analysis failed";
-    return errorResponse(request, message, 500);
+    errorResponse(req, res, message, 500);
   }
 }

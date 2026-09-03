@@ -1,8 +1,11 @@
-import { handleOptions, jsonResponse } from "./_lib.js";
+import {
+  handleOptions,
+  jsonResponse,
+  type VercelRequest,
+  type VercelResponse,
+} from "./_lib.js";
 
-export default async function handler(request: Request): Promise<Response> {
-  const options = handleOptions(request);
-  if (options) return options;
-
-  return jsonResponse(request, { status: "ok" });
+export default function handler(req: VercelRequest, res: VercelResponse): void {
+  if (handleOptions(req, res)) return;
+  jsonResponse(req, res, { status: "ok" });
 }

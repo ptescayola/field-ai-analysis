@@ -1,29 +1,41 @@
-import { errorResponse, getApplication, handleOptions, jsonResponse } from "./_lib.js";
+import {
+  errorResponse,
+  getApplication,
+  handleOptions,
+  jsonResponse,
+  type VercelRequest,
+  type VercelResponse,
+} from "./_lib.js";
 
-export default async function handler(request: Request): Promise<Response> {
-  const options = handleOptions(request);
-  if (options) return options;
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse
+): Promise<void> {
+  if (handleOptions(req, res)) return;
 
-  if (request.method !== "GET") {
-    return errorResponse(request, "Method not allowed", 405);
+  if (req.method !== "GET") {
+    errorResponse(req, res, "Method not allowed", 405);
+    return;
   }
 
-  const url = new URL(request.url);
-  const lat = Number(url.searchParams.get("lat"));
-  const lng = Number(url.searchParams.get("lng"));
+  const lat = Number(req.query.lat);
+  const lng = Number(req.query.lng);
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-    return errorResponse(request, "Invalid coordinates", 400);
+    errorResponse(req, res, "Invalid coordinates", 400);
+    return;
   }
   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-    return errorResponse(request, "Coordinates out of range", 400);
+    errorResponse(req, res, "Coordinates out of range", 400);
+    return;
   }
 
   try {
     const forecast = await getApplication().getWeatherForecast.execute(lat, lng);
-    return jsonResponse(request, forecast);
+    jsonResponse(req, res, forecast);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Weather fetch failed";
-    return errorResponse(request, message, 502);
+    const message =
+      error instanceof Error ? error.message : "Weather fetch failed";
+    errorResponse(req, res, message, 502);
   }
 }

@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.14.1",
+    "@vercel/node": "^5.1.16",
     "dotenv": "^17.4.2",
     "hono": "^4.7.7",
     "openai": "^7.9.0",

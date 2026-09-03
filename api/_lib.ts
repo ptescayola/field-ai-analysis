@@ -1,3 +1,4 @@
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createApplication, type Application } from "../backend/composition-root.js";
 
 let application: Application | undefined;
@@ -31,43 +32,47 @@ function getAllowedOrigins(): string[] {
   return [...origins];
 }
 
-function corsHeaders(request: Request): HeadersInit {
-  const origin = request.headers.get("origin");
+function applyCors(req: VercelRequest, res: VercelResponse): void {
+  const origin = req.headers.origin;
   const allowed = getAllowedOrigins();
-  const headers: Record<string, string> = {
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-  };
 
-  if (origin && allowed.includes(origin)) {
-    headers["Access-Control-Allow-Origin"] = origin;
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (typeof origin === "string" && allowed.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
   }
-
-  return headers;
 }
 
 export function jsonResponse(
-  request: Request,
+  req: VercelRequest,
+  res: VercelResponse,
   data: unknown,
   status = 200
-): Response {
-  return Response.json(data, {
-    status,
-    headers: corsHeaders(request),
-  });
+): void {
+  applyCors(req, res);
+  res.status(status).json(data);
 }
 
 export function errorResponse(
-  request: Request,
+  req: VercelRequest,
+  res: VercelResponse,
   message: string,
   status: number
-): Response {
-  return jsonResponse(request, { error: message }, status);
+): void {
+  jsonResponse(req, res, { error: message }, status);
 }
 
-export function handleOptions(request: Request): Response | null {
-  if (request.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders(request) });
+export function handleOptions(
+  req: VercelRequest,
+  res: VercelResponse
+): boolean {
+  if (req.method === "OPTIONS") {
+    applyCors(req, res);
+    res.status(204).end();
+    return true;
   }
-  return null;
+  return false;
 }
+
+export type { VercelRequest, VercelResponse };

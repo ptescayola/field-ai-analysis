@@ -107,9 +107,9 @@ git push -u origin main
 ### Step 2 — Import project in Vercel
 
 1. Go to [vercel.com/new](https://vercel.com/new)
-2. Import the GitHub repository
+2. Import the GitHub repository **once** as project `field-ai-analysis` (repo root)
 3. **Framework preset:** Other (not Vite — root `vercel.json` controls the build)
-4. **Root Directory:** leave **empty** (repository root). Do **not** set it to `app` — that causes `app/app/package.json` errors and breaks the API.
+4. **Root Directory:** leave **empty** (repository root). Do **not** set it to `app` — that deploys only the Vue app and **all `/api/*` routes return 404** because `api/` lives at repo root.
 5. Build settings should come from `vercel.json`:
    - Install: `npm install && npm install --prefix app`
    - Build: `npm run vercel-build`
@@ -182,7 +182,8 @@ vercel dev
 |-------|-----|
 | `504` / timeout on analyze | Upgrade to **Pro**; check `maxDuration: 60` in `vercel.json` |
 | `Missing OPENAI_API_KEY` | Add env var in Vercel dashboard, redeploy |
-| `/api/fields` returns **404** | **Root Directory** must be empty (repo root) so `api/` is deployed; redeploy after pushing latest code |
+| `/api/fields` returns **404** | You likely deploy project **"app"** with Root Directory = `app`. Fix: **Root Directory empty** on the project that serves your domain, or use `field-ai-analysis.vercel.app` |
+| `/api/*` returns **500** | Check Runtime Logs; handlers must use `@vercel/node` (`VercelRequest`/`VercelResponse`), not Web `Request` |
 | Empty fields list | Ensure `data/` is deployed (`includeFiles` in `vercel.json`) |
 | `ENOENT .../app/app/package.json` | **Root Directory** must be empty (repo root), not `app` |
 | CORS errors | Same-domain deploy should not need CORS; set `ALLOWED_ORIGIN` if using a custom domain on the app only |

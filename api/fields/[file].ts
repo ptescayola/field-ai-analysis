@@ -4,28 +4,33 @@ import {
   handleOptions,
   isValidFieldFile,
   jsonResponse,
+  type VercelRequest,
+  type VercelResponse,
 } from "../_lib.js";
 
-export default async function handler(request: Request): Promise<Response> {
-  const options = handleOptions(request);
-  if (options) return options;
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse
+): Promise<void> {
+  if (handleOptions(req, res)) return;
 
-  if (request.method !== "GET") {
-    return errorResponse(request, "Method not allowed", 405);
+  if (req.method !== "GET") {
+    errorResponse(req, res, "Method not allowed", 405);
+    return;
   }
 
-  const url = new URL(request.url);
-  const file = decodeURIComponent(url.pathname.split("/").pop() ?? "");
+  const file = decodeURIComponent(String(req.query.file ?? ""));
 
   if (!isValidFieldFile(file)) {
-    return errorResponse(request, "Invalid field", 400);
+    errorResponse(req, res, "Invalid field", 400);
+    return;
   }
 
   try {
     const field = await getApplication().getField.execute(file);
-    return jsonResponse(request, field);
+    jsonResponse(req, res, field);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Field not found";
-    return errorResponse(request, message, 404);
+    errorResponse(req, res, message, 404);
   }
 }
