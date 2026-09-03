@@ -72,9 +72,18 @@ onMounted(() => {
   <div class="app">
     <header class="header">
       <div class="header-inner">
-        <div>
-          <h1>AI Agronomic Copilot</h1>
-          <p class="subtitle">Field analysis with specialized agents</p>
+        <div class="title-group">
+          <img
+            src="/favicon.ico"
+            alt=""
+            class="title-icon"
+            width="32"
+            height="32"
+          />
+          <div>
+            <h1>AI Agronomic Copilot</h1>
+            <p class="subtitle">Field analysis with specialized agents</p>
+          </div>
         </div>
         <div class="controls">
           <label>
@@ -140,6 +149,17 @@ onMounted(() => {
   align-items: flex-end;
   gap: 1.5rem;
   flex-wrap: wrap;
+}
+
+.title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.title-icon {
+  flex-shrink: 0;
+  border-radius: 8px;
 }
 
 .header h1 {
