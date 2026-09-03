@@ -86,7 +86,7 @@ Set `OPENAI_API_KEY` in the environment. Run from the project root so `./data` a
 
 ## Deploy to Vercel
 
-The repo is configured for a **single Vercel project**: Vue static app + Hono API as a serverless function on the same domain (`/api/*`).
+The repo is configured for a **single Vercel project**: Vue static app + native Vercel serverless API routes on the same domain (`/api/*`).
 
 ### Prerequisites
 
@@ -149,9 +149,9 @@ Do **not** commit `.env` to git.
 Click **Deploy**. Vercel will:
 
 1. Install root + app dependencies
-2. Build the Vue app → `dist/` (frontend) + `backend-dist/` (API)
-3. Deploy `api/[[...route]].ts` as a catch-all serverless function (handles `/api/fields`, `/api/analyze`, etc.)
-4. Route `/api/*` → API, everything else → SPA
+2. Build the Vue app → `dist/` (frontend)
+3. Deploy each file under `api/` as its own serverless function (`/api/health`, `/api/fields`, `/api/fields/[file]`, `/api/weather`, `/api/analyze`)
+4. Route everything except `/api/*` → SPA (`index.html`)
 
 ### Step 5 — Verify
 
@@ -182,6 +182,7 @@ vercel dev
 |-------|-----|
 | `504` / timeout on analyze | Upgrade to **Pro**; check `maxDuration: 60` in `vercel.json` |
 | `Missing OPENAI_API_KEY` | Add env var in Vercel dashboard, redeploy |
+| `/api/fields` returns **404** | **Root Directory** must be empty (repo root) so `api/` is deployed; redeploy after pushing latest code |
 | Empty fields list | Ensure `data/` is deployed (`includeFiles` in `vercel.json`) |
 | `ENOENT .../app/app/package.json` | **Root Directory** must be empty (repo root), not `app` |
 | CORS errors | Same-domain deploy should not need CORS; set `ALLOWED_ORIGIN` if using a custom domain on the app only |
