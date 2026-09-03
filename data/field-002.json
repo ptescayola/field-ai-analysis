@@ -1,0 +1,37 @@
+{
+  "field": {
+    "id": "FIELD-002",
+    "name": "Viña del Sol",
+    "location": {
+      "lat": 42.47,
+      "lng": -2.45
+    },
+    "area_hectares": 8.6
+  },
+  "crop": {
+    "type": "grape",
+    "variety": "tempranillo",
+    "planting_date": "2022-03-10",
+    "growth_stage": "veraison"
+  },
+  "soil": {
+    "type": "clay_loam",
+    "moisture_percent": 58,
+    "temperature_c": 21.2,
+    "ph": 7.1
+  },
+  "weather": {
+    "temperature_c": 24,
+    "humidity_percent": 72,
+    "rain_last_7_days_mm": 42,
+    "forecast": []
+  },
+  "vegetation": {
+    "ndvi": 0.81,
+    "ndvi_previous_week": 0.8
+  },
+  "observations": [
+    "Canopy looks uniform and healthy across all rows",
+    "Soil still damp from last week's rainfall — no cracking observed"
+  ]
+}

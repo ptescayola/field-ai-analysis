@@ -84,6 +84,90 @@ cd app && npm run build   # static UI → app/dist/
 
 Set `OPENAI_API_KEY` in the environment. Run from the project root so `./data` and `./agents` resolve correctly.
 
+## Deploy to Vercel
+
+The repo is configured for a **single Vercel project**: Vue static app + Hono API as a serverless function on the same domain (`/api/*`).
+
+### Prerequisites
+
+1. [Vercel account](https://vercel.com) (GitHub login)
+2. **Vercel Pro recommended** — `/api/analyze` runs 4 LLM agents and often takes 15–30s. Hobby plan timeout is **10s**; Pro allows **60s** (configured in `vercel.json`).
+3. [OpenAI API key](https://platform.openai.com/api-keys)
+4. Repo pushed to GitHub
+
+### Step 1 — Push to GitHub
+
+```bash
+git add .
+git commit -m "Prepare Vercel deployment"
+git remote add origin https://github.com/YOUR_USER/field-ai-analysis.git
+git push -u origin main
+```
+
+### Step 2 — Import project in Vercel
+
+1. Go to [vercel.com/new](https://vercel.com/new)
+2. Import the GitHub repository
+3. **Framework preset:** Other (not Vite — root `vercel.json` controls the build)
+4. Leave build settings as detected from `vercel.json`:
+   - Build command: `npm install --prefix app && npm run build --prefix app`
+   - Output directory: `app/dist`
+
+### Step 3 — Environment variables
+
+In **Project → Settings → Environment Variables**, add:
+
+| Variable | Value | Environments |
+|----------|-------|--------------|
+| `OPENAI_API_KEY` | `sk-...` | Production, Preview, Development |
+| `OPENAI_MODEL` | `gpt-4o-mini` | Production (optional) |
+
+Do **not** commit `.env` to git.
+
+### Step 4 — Deploy
+
+Click **Deploy**. Vercel will:
+
+1. Install root + app dependencies
+2. Build the Vue app → `app/dist/`
+3. Deploy `api/index.ts` as a Node.js serverless function
+4. Route `/api/*` → API, everything else → SPA
+
+### Step 5 — Verify
+
+```bash
+curl https://YOUR_PROJECT.vercel.app/api/health
+# → {"status":"ok"}
+
+curl https://YOUR_PROJECT.vercel.app/api/fields
+# → list of fields
+```
+
+Open `https://YOUR_PROJECT.vercel.app`, select a field, click **Should I irrigate?**
+
+### Local Vercel simulation (optional)
+
+```bash
+npm i -g vercel
+vercel login
+vercel link
+vercel env pull .env.local
+vercel dev
+```
+
+### Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| `504` / timeout on analyze | Upgrade to **Pro**; check `maxDuration: 60` in `vercel.json` |
+| `Missing OPENAI_API_KEY` | Add env var in Vercel dashboard, redeploy |
+| Empty fields list | Ensure `data/` is deployed (`includeFiles` in `vercel.json`) |
+| CORS errors | Same-domain deploy should not need CORS; set `ALLOWED_ORIGIN` if using a custom domain on the app only |
+
+### Alternative: split frontend / backend
+
+If analyze timeouts persist, deploy **API on Railway/Fly.io** (`npm run build && npm start`) and set `VITE_API_URL` in the Vue app — requires a small code change in `app/src/api/client.ts`.
+
 ## API
 
 | Method | Route | Description |

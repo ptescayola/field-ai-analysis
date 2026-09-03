@@ -4,6 +4,12 @@ function formatPercent(value: number): string {
   return `${Math.round(value * 100)}%`;
 }
 
+function formatLabel(value: string): string {
+  return value
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 function formatRiskList(
   risks: PipelineResult["analysis"]["risks"]
 ): string {
@@ -14,7 +20,7 @@ function formatRiskList(
   return risks
     .map(
       (risk) =>
-        `  • ${risk.type.replaceAll("_", " ")} (${risk.severity}, confidence ${formatPercent(risk.confidence)})\n    ${risk.evidence}`
+        `  • ${formatLabel(risk.type)} (${risk.severity}, confidence ${formatPercent(risk.confidence)})\n    ${risk.evidence}`
     )
     .join("\n");
 }

@@ -7,7 +7,9 @@ const props = defineProps<{
 }>();
 
 function formatRiskType(type: string): string {
-  return type.replaceAll("_", " ");
+  return type
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function severityClass(severity: Risk["severity"]): string {

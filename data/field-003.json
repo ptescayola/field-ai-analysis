@@ -1,0 +1,38 @@
+{
+  "field": {
+    "id": "FIELD-003",
+    "name": "Pla de Lleida",
+    "location": {
+      "lat": 41.62,
+      "lng": 0.62
+    },
+    "area_hectares": 12.5
+  },
+  "crop": {
+    "type": "corn",
+    "variety": "pioneer_p1547",
+    "planting_date": "2026-05-20",
+    "growth_stage": "silking"
+  },
+  "soil": {
+    "type": "sandy_loam",
+    "moisture_percent": 18,
+    "temperature_c": 28.5,
+    "ph": 6.4
+  },
+  "weather": {
+    "temperature_c": 36,
+    "humidity_percent": 42,
+    "rain_last_7_days_mm": 0,
+    "forecast": []
+  },
+  "vegetation": {
+    "ndvi": 0.55,
+    "ndvi_previous_week": 0.68
+  },
+  "observations": [
+    "Visible leaf rolling and wilting in the central sector",
+    "Spider mite activity reported on lower leaves",
+    "Irrigation system offline for 4 days due to pump maintenance"
+  ]
+}
