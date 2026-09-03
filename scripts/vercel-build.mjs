@@ -1,5 +1,5 @@
+import { cpSync, existsSync, rmSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { existsSync } from "node:fs";
 
 function run(command) {
   execSync(command, { stdio: "inherit" });
@@ -12,6 +12,11 @@ const atAppRoot =
 if (atRepoRoot) {
   run("npm run build");
   run("npm run build --prefix app");
+  // Vercel outputDirectory is "dist" at repo root — publish the Vue build there
+  if (existsSync("dist")) {
+    rmSync("dist", { recursive: true, force: true });
+  }
+  cpSync("app/dist", "dist", { recursive: true });
 } else if (atAppRoot) {
   run("npm run build --prefix ..");
   run("npm run build");
@@ -21,9 +26,12 @@ if (atRepoRoot) {
   );
 }
 
-const staticIndex = atRepoRoot ? "dist/index.html" : "../dist/index.html";
+const staticIndex = atRepoRoot ? "dist/index.html" : "dist/index.html";
 if (!existsSync(staticIndex)) {
   throw new Error(
-    `Frontend build missing: expected ${staticIndex}. Check Vite outDir and Root Directory settings.`
+    `Frontend build missing: expected ${staticIndex}. ` +
+      "Root Directory should be empty (repo root). Output Directory should be 'dist'."
   );
 }
+
+console.error(`✓ Static output ready at ${staticIndex}`);

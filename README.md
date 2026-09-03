@@ -118,6 +118,16 @@ git push -u origin main
 If you already created the project with Root Directory = `app`, fix it:
 **Project → Settings → General → Root Directory → Edit → clear the field → Save**, then redeploy.
 
+**Project → Settings → Build & Deployment** — clear any overrides so `vercel.json` applies:
+
+| Setting | Value |
+|---------|--------|
+| Root Directory | *(empty)* |
+| Framework Preset | Other |
+| Build Command | *(empty)* |
+| Output Directory | `dist` *(or empty → uses vercel.json)* |
+| Install Command | *(empty)* |
+
 ### Step 3 — Environment variables
 
 In **Project → Settings → Environment Variables**, add:
