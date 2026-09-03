@@ -16,11 +16,13 @@ export interface AgentRunResult<T> {
   trace: AgentTrace;
 }
 
+export interface AgentRunParams<T> {
+  agentName: string;
+  input: unknown;
+  outputSchema: ZodType<T>;
+  responseName: string;
+}
+
 export interface AgentPort {
-  run<T>(params: {
-    agentName: string;
-    input: unknown;
-    outputSchema: ZodType<T>;
-    responseName: string;
-  }): Promise<AgentRunResult<T>>;
+  run<T>(params: AgentRunParams<T>): Promise<AgentRunResult<T>>;
 }

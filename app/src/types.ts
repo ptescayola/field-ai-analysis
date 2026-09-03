@@ -1,6 +1,5 @@
 export interface FieldListItem {
   file: string;
-  path: string;
   id: string;
   name: string;
 }
@@ -98,17 +97,6 @@ export interface PipelineResult {
   analysis: AnalysisOutput;
   meta: {
     prompt_versions: Record<string, string>;
-    trace: Array<{
-      agent: string;
-      model: string;
-      prompt_version: string;
-      duration_ms: number;
-      usage: {
-        prompt_tokens: number;
-        completion_tokens: number;
-        total_tokens: number;
-      };
-    }>;
     metrics: {
       total_duration_ms: number;
       total_tokens: number;

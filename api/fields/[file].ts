@@ -30,7 +30,7 @@ export default async function handler(
     const field = await getApplication().getField.execute(file);
     jsonResponse(req, res, field);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Field not found";
-    errorResponse(req, res, message, 404);
+    console.error("Field lookup failed", error);
+    errorResponse(req, res, "Field not found", 404);
   }
 }

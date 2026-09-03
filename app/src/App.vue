@@ -2,6 +2,8 @@
 import { onMounted, ref } from "vue";
 import { analyzeField, fetchField, fetchFields } from "./api/client";
 import AnalysisView from "./components/AnalysisView.vue";
+import AppFooter from "./components/AppFooter.vue";
+import AppHeader from "./components/AppHeader.vue";
 import FieldPanel from "./components/FieldPanel.vue";
 import type { FieldData, FieldListItem, PipelineResult } from "./types";
 
@@ -45,7 +47,8 @@ async function loadSelectedField(): Promise<void> {
   }
 }
 
-async function onFieldChange(): Promise<void> {
+async function onFieldSelected(file: string): Promise<void> {
+  selectedFile.value = file;
   await loadSelectedField();
 }
 
@@ -70,55 +73,36 @@ onMounted(() => {
 
 <template>
   <div class="app">
-    <header class="header">
-      <div class="header-inner">
-        <div class="title-group">
-          <img
-            src="/favicon.ico"
-            alt=""
-            class="title-icon"
-            width="32"
-            height="32"
-          />
-          <div>
-            <h1>AI Agronomic Copilot</h1>
-            <p class="subtitle">Field analysis with specialized agents</p>
-          </div>
-        </div>
-        <div class="controls">
-          <label>
-            <span>Field</span>
-            <select
-              v-model="selectedFile"
-              :disabled="loadingFields || analyzing"
-              @change="onFieldChange"
-            >
-              <option v-for="f in fields" :key="f.file" :value="f.file">
-                {{ f.name }} ({{ f.id }})
-              </option>
-            </select>
-          </label>
-          <button
-            class="btn-primary"
-            :disabled="!selectedFile || analyzing || loadingField"
-            @click="runAnalysis"
-          >
-            {{ analyzing ? "Analyzing…" : "Analyze field" }}
-          </button>
-        </div>
-      </div>
-    </header>
+    <AppHeader
+      :fields="fields"
+      :selected-file="selectedFile"
+      :loading-fields="loadingFields"
+      :loading-field="loadingField"
+      :analyzing="analyzing"
+      @update:selected-file="onFieldSelected"
+      @analyze="runAnalysis"
+    />
 
     <main class="main">
-      <p v-if="error" class="error">{{ error }}</p>
+      <p v-if="error" class="error" role="alert">{{ error }}</p>
 
-      <div v-if="loadingFields" class="state">Loading fields…</div>
+      <div v-if="loadingFields" class="state" aria-live="polite">
+        Loading fields…
+      </div>
 
       <template v-else>
+        <div v-if="fields.length === 0" class="state">
+          No fields are available.
+        </div>
         <div v-if="loadingField" class="state">Loading field data…</div>
         <FieldPanel v-else-if="fieldData" :field="fieldData" />
 
-        <div v-if="analyzing" class="state analyzing">
+        <div
+          v-if="analyzing"
+          class="state analyzing"
+          role="status"
+          aria-live="polite"
+        >
           <div class="spinner" />
           <p>Running agents (Data Analyst, Risk Analyst, Agronomist, Coordinator)…</p>
           <p class="hint">This may take 10–20 seconds</p>
@@ -127,99 +111,24 @@ onMounted(() => {
         <AnalysisView v-else-if="result" :result="result" />
       </template>
     </main>
+
+    <AppFooter />
   </div>
 </template>
 
 <style scoped>
 .app {
   min-height: 100vh;
-}
-
-.header {
-  background: var(--green);
-  color: #fff;
-  padding: 1.5rem 1.25rem 2rem;
-}
-
-.header-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.title-group {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-}
-
-.title-icon {
-  flex-shrink: 0;
-  border-radius: 8px;
-}
-
-.header h1 {
-  margin: 0 0 0.25rem;
-  font-size: 2rem;
-  color: #fff;
-}
-
-.subtitle {
-  margin: 0;
-  opacity: 0.85;
-  font-size: 0.95rem;
-}
-
-.controls {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-end;
-  flex-wrap: wrap;
-}
-
-.controls label {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  font-size: 0.8rem;
-  opacity: 0.9;
-}
-
-select {
-  font-family: inherit;
-  font-size: 0.95rem;
-  padding: 0.55rem 0.75rem;
-  border-radius: 8px;
-  border: none;
-  min-width: 220px;
-  background: rgb(255 255 255 / 95%);
-  color: var(--text);
-}
-
-.btn-primary {
-  background: #fff;
-  color: var(--green);
-  border: none;
-  font-weight: 600;
-  font-size: 0.95rem;
-  padding: 0.6rem 1.25rem;
-  border-radius: 8px;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
 }
 
 .main {
+  flex: 1;
   max-width: 1100px;
+  width: 100%;
   margin: -1rem auto 0;
-  padding: 0 1.25rem 3rem;
+  padding: 0 1.25rem 2rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -265,6 +174,12 @@ select {
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
   }
 }
 </style>

@@ -2,9 +2,13 @@ node_modules/
 dist/
 backend-dist/
 .env
+.env.local
+.env.*.local
 traces/
+coverage/
 app/node_modules/
 app/dist/
 .DS_Store
 *.log
+*.tsbuildinfo
 .vercel

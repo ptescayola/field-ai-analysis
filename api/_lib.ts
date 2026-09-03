@@ -1,35 +1,17 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createApplication, type Application } from "../backend/composition-root.js";
+import {
+  getAllowedOrigins,
+  getErrorMessage,
+  isValidFieldFile,
+  parseCoordinates,
+} from "../backend/presentation/http/request-utils.js";
 
 let application: Application | undefined;
 
 export function getApplication(): Application {
   application ??= createApplication();
   return application;
-}
-
-export function isValidFieldFile(file: string): boolean {
-  return file.endsWith(".json") && !file.includes("..");
-}
-
-function getAllowedOrigins(): string[] {
-  const origins = new Set<string>([
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-  ]);
-
-  for (const value of [
-    process.env.APP_URL,
-    process.env.ALLOWED_ORIGIN,
-    process.env.VERCEL_PROJECT_PRODUCTION_URL,
-    process.env.VERCEL_BRANCH_URL,
-    process.env.VERCEL_URL,
-  ]) {
-    if (!value) continue;
-    origins.add(value.startsWith("http") ? value : `https://${value}`);
-  }
-
-  return [...origins];
 }
 
 function applyCors(req: VercelRequest, res: VercelResponse): void {
@@ -76,3 +58,8 @@ export function handleOptions(
 }
 
 export type { VercelRequest, VercelResponse };
+export {
+  getErrorMessage,
+  isValidFieldFile,
+  parseCoordinates,
+};

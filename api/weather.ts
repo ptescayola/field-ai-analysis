@@ -1,8 +1,10 @@
 import {
   errorResponse,
   getApplication,
+  getErrorMessage,
   handleOptions,
   jsonResponse,
+  parseCoordinates,
   type VercelRequest,
   type VercelResponse,
 } from "./_lib.js";
@@ -18,24 +20,22 @@ export default async function handler(
     return;
   }
 
-  const lat = Number(req.query.lat);
-  const lng = Number(req.query.lng);
-
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+  const coordinates = parseCoordinates(
+    typeof req.query.lat === "string" ? req.query.lat : undefined,
+    typeof req.query.lng === "string" ? req.query.lng : undefined
+  );
+  if (!coordinates) {
     errorResponse(req, res, "Invalid coordinates", 400);
-    return;
-  }
-  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-    errorResponse(req, res, "Coordinates out of range", 400);
     return;
   }
 
   try {
-    const forecast = await getApplication().getWeatherForecast.execute(lat, lng);
+    const forecast = await getApplication().getWeatherForecast.execute(
+      coordinates.latitude,
+      coordinates.longitude
+    );
     jsonResponse(req, res, forecast);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Weather fetch failed";
-    errorResponse(req, res, message, 502);
+    errorResponse(req, res, getErrorMessage(error, "Weather fetch failed"), 502);
   }
 }

@@ -2,45 +2,33 @@
 
 AI agronomic copilot that analyzes field data through a multi-agent pipeline and returns irrigation recommendations, risk assessments, and agronomic insights.
 
+**Live demo:** [field-ai-analysis.vercel.app](https://field-ai-analysis.vercel.app)
+
+The original product brief is available in [`PROJECT.md`](./PROJECT.md).
+
+## Tech stack
+
+- **Frontend:** Vue 3, Vite, TypeScript
+- **Backend:** Node.js, Hono, hexagonal architecture
+- **AI:** OpenAI (4 specialized agents)
+- **Weather:** Open-Meteo (live 7-day forecast)
+- **Deploy:** Vercel (static app + serverless API)
+
 ## Architecture
 
 Hexagonal architecture (ports & adapters) with DDD bounded contexts:
 
 ```
 field-ai-analysis/
-├── app/              # Frontend (Vue)
-├── backend/          # Domain, use cases, infrastructure, API, CLI
-│   ├── domain/
-│   ├── application/
-│   ├── infrastructure/
-│   ├── presentation/
-│   └── composition-root.ts
-├── agents/           # LLM prompts
-└── data/             # Field snapshots
-```
-
-Hexagonal architecture (ports & adapters) with DDD bounded contexts:
-
-```
-backend/
-├── domain/           # Entities, schemas, port interfaces
-│   ├── field/
-│   ├── analysis/
-│   ├── weather/
-│   ├── pipeline/
-│   └── ports/
-├── application/      # Use cases & orchestration
-│   ├── use-cases/
-│   └── services/
-├── infrastructure/   # Adapters (OpenAI, Open-Meteo, filesystem)
-│   ├── llm/
-│   ├── weather/
-│   ├── persistence/
-│   └── prompts/
-├── presentation/     # Driving adapters (HTTP, CLI)
-│   ├── http/
-│   └── cli/
-└── composition-root.ts   # Dependency wiring
+├── app/              # Vue frontend
+├── api/              # Vercel serverless routes
+├── backend/
+│   ├── domain/       # Schemas, entities, port interfaces
+│   ├── application/  # Use cases & orchestration
+│   ├── infrastructure/  # OpenAI, Open-Meteo, filesystem adapters
+│   └── presentation/ # Hono HTTP server, CLI
+├── agents/           # Versioned LLM prompts (*.md)
+└── data/             # Field snapshots (JSON fixtures)
 ```
 
 ### Agent pipeline
@@ -63,7 +51,7 @@ Agent prompts live in `agents/*.md` (versioned via `agents/manifest.json`).
 ```bash
 cp .env   # add your OPENAI_API_KEY
 npm install
-cd app && npm install && cd ..
+npm install --prefix app
 ```
 
 ## Development
@@ -74,19 +62,28 @@ npm run analyze  # CLI analysis
 npm run analyze -- --json --trace
 ```
 
-## Production
+Run from the project root so `./data` and `./agents` resolve correctly.
+
+### Quality checks
+
+```bash
+npm run check
+```
+
+This runs backend tests, backend TypeScript compilation, and Vue type checking.
+Use `npm run build:app` to verify the production frontend bundle separately.
+
+## Production (local)
 
 ```bash
 npm run build
-npm start        # serves API from backend-dist/
-cd app && npm run build   # static UI → dist/ (repo root)
+npm start        # API from backend-dist/
+npm run build --prefix app   # static UI → app/dist/
 ```
-
-Set `OPENAI_API_KEY` in the environment. Run from the project root so `./data` and `./agents` resolve correctly.
 
 ## Deploy to Vercel
 
-The repo is configured for a **single Vercel project**: Vue static app + native Vercel serverless API routes on the same domain (`/api/*`).
+Single Vercel project: Vue static app + native serverless API routes on the same domain (`/api/*`).
 
 ### Prerequisites
 
@@ -95,82 +92,52 @@ The repo is configured for a **single Vercel project**: Vue static app + native 
 3. [OpenAI API key](https://platform.openai.com/api-keys)
 4. Repo pushed to GitHub
 
-### Step 1 — Push to GitHub
+### Project settings
 
-```bash
-git add .
-git commit -m "Prepare Vercel deployment"
-git remote add origin https://github.com/YOUR_USER/field-ai-analysis.git
-git push -u origin main
-```
-
-### Step 2 — Import project in Vercel
-
-1. Go to [vercel.com/new](https://vercel.com/new)
-2. Import the GitHub repository **once** as project `field-ai-analysis` (repo root)
-3. **Framework preset:** Other (not Vite — root `vercel.json` controls the build)
-4. **Root Directory:** leave **empty** (repository root). Do **not** set it to `app` — that deploys only the Vue app and **all `/api/*` routes return 404** because `api/` lives at repo root.
-5. Build settings should come from `vercel.json`:
-   - Install: `npm install && npm install --prefix app`
-   - Build: `npm run vercel-build`
-   - Output directory: `dist`
-
-If you already created the project with Root Directory = `app`, fix it:
-**Project → Settings → General → Root Directory → Edit → clear the field → Save**, then redeploy.
-
-**Project → Settings → Build & Deployment** — clear any overrides so `vercel.json` applies:
+Import the repo as project **`field-ai-analysis`** with these settings:
 
 | Setting | Value |
 |---------|--------|
-| Root Directory | *(empty)* |
+| Root Directory | *(empty — repo root, not `app`)* |
 | Framework Preset | Other |
-| Build Command | *(empty)* |
-| Output Directory | `dist` *(or empty → uses vercel.json)* |
-| Install Command | *(empty)* |
+| Build / Install / Output | From `vercel.json` |
 
-### Step 3 — Environment variables
+If Root Directory is set to `app`, the `api/` folder is not deployed and all `/api/*` routes return **404**.
 
-In **Project → Settings → Environment Variables**, add:
+### Environment variables
 
-| Variable | Value | Environments |
-|----------|-------|--------------|
-| `OPENAI_API_KEY` | `sk-...` | Production, Preview, Development |
-| `OPENAI_MODEL` | `gpt-4o-mini` | Production (optional) |
-| `APP_URL` | `https://app-eight-sigma-14.vercel.app` or your custom domain | Production (optional, for CORS) |
+In **Project → Settings → Environment Variables**:
 
-Vercel sets `VERCEL_URL` and `VERCEL_PROJECT_PRODUCTION_URL` automatically — CORS uses those too.
+| Variable | Required | Environments |
+|----------|----------|--------------|
+| `OPENAI_API_KEY` | Yes | Production, Preview, Development |
+| `OPENAI_MODEL` | No | Defaults to `gpt-4o-mini` |
+| `APP_URL` | No | e.g. `https://field-ai-analysis.vercel.app` (CORS) |
 
-Leave `VITE_API_BASE_URL` **empty** when app and API share the same Vercel domain (default). Only set it if the API lives on a different host.
+Leave `VITE_API_BASE_URL` **empty** when app and API share the same Vercel domain.
+
+**Redeploy after adding or changing env vars** — existing deployments do not pick them up automatically.
 
 Do **not** commit `.env` to git.
 
-### Step 4 — Deploy
-
-Click **Deploy**. Vercel will:
-
-1. Install root + app dependencies
-2. Build the Vue app → `dist/` (frontend)
-3. Deploy each file under `api/` as its own serverless function (`/api/health`, `/api/fields`, `/api/fields/[file]`, `/api/weather`, `/api/analyze`)
-4. Route everything except `/api/*` → SPA (`index.html`)
-
-### Step 5 — Verify
+### Verify
 
 ```bash
-curl https://YOUR_PROJECT.vercel.app/api/health
+curl https://field-ai-analysis.vercel.app/api/health
 # → {"status":"ok"}
 
-curl https://YOUR_PROJECT.vercel.app/api/fields
+curl https://field-ai-analysis.vercel.app/api/fields
 # → list of fields
 ```
 
-Open `https://YOUR_PROJECT.vercel.app`, select a field, click **Should I irrigate?**
+Open the demo, select a field, click **Analyze field**.
 
 ### Local Vercel simulation (optional)
 
 ```bash
 npm i -g vercel
 vercel login
-vercel link
+vercel link      # select project "field-ai-analysis"
 vercel env pull .env.local
 vercel dev
 ```

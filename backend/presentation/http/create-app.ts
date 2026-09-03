@@ -1,30 +1,13 @@
 import { cors } from "hono/cors";
 import { Hono } from "hono";
 import { createApplication } from "../../composition-root.js";
-
-function isValidFieldFile(file: string): boolean {
-  return file.endsWith(".json") && !file.includes("..");
-}
-
-function getAllowedOrigins(): string[] {
-  const origins = new Set<string>([
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-  ]);
-
-  for (const value of [
-    process.env.APP_URL,
-    process.env.ALLOWED_ORIGIN,
-    process.env.VERCEL_PROJECT_PRODUCTION_URL,
-    process.env.VERCEL_BRANCH_URL,
-    process.env.VERCEL_URL,
-  ]) {
-    if (!value) continue;
-    origins.add(value.startsWith("http") ? value : `https://${value}`);
-  }
-
-  return [...origins];
-}
+import { toAnalysisResponse } from "./analysis-response.js";
+import {
+  getAllowedOrigins,
+  getErrorMessage,
+  isValidFieldFile,
+  parseCoordinates,
+} from "./request-utils.js";
 
 export function createHonoApp(): Hono {
   const app = new Hono().basePath("/api");
@@ -36,6 +19,11 @@ export function createHonoApp(): Hono {
       origin: getAllowedOrigins(),
     })
   );
+
+  app.onError((error, c) => {
+    console.error(error);
+    return c.json({ error: "Unexpected server error" }, 500);
+  });
 
   app.get("/health", (c) => c.json({ status: "ok" }));
 
@@ -50,27 +38,26 @@ export function createHonoApp(): Hono {
       return c.json({ error: "Invalid field" }, 400);
     }
 
-    const field = await application.getField.execute(file);
-    return c.json(field);
+    try {
+      const field = await application.getField.execute(file);
+      return c.json(field);
+    } catch (error) {
+      return c.json({ error: getErrorMessage(error, "Field not found") }, 404);
+    }
   });
 
   app.get("/weather", async (c) => {
-    const lat = Number(c.req.query("lat"));
-    const lng = Number(c.req.query("lng"));
-
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-      return c.json({ error: "Invalid coordinates" }, 400);
-    }
-    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-      return c.json({ error: "Coordinates out of range" }, 400);
-    }
+    const coordinates = parseCoordinates(c.req.query("lat"), c.req.query("lng"));
+    if (!coordinates) return c.json({ error: "Invalid coordinates" }, 400);
 
     try {
-      const forecast = await application.getWeatherForecast.execute(lat, lng);
+      const forecast = await application.getWeatherForecast.execute(
+        coordinates.latitude,
+        coordinates.longitude
+      );
       return c.json(forecast);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Weather fetch failed";
+      const message = getErrorMessage(error, "Weather fetch failed");
       return c.json({ error: message }, 502);
     }
   });
@@ -83,8 +70,13 @@ export function createHonoApp(): Hono {
       return c.json({ error: "Invalid field" }, 400);
     }
 
-    const result = await application.analyzeField.execute(file);
-    return c.json(result);
+    try {
+      const result = await application.analyzeField.execute(file);
+      return c.json(toAnalysisResponse(result));
+    } catch (error) {
+      console.error("Analysis failed", error);
+      return c.json({ error: "Analysis failed" }, 500);
+    }
   });
 
   return app;

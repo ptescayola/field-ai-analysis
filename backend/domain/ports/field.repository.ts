@@ -2,7 +2,6 @@ import type { FieldData } from "../field/field.schema.js";
 
 export interface FieldListItem {
   file: string;
-  path: string;
   id: string;
   name: string;
 }

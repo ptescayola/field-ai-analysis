@@ -5,6 +5,9 @@
   "description": "AI agronomic copilot — field data analysis with prompt-based agents",
   "scripts": {
     "build": "tsc",
+    "build:app": "npm run build --prefix app",
+    "check": "npm run test && npm run build && npm run typecheck --prefix app",
+    "test": "tsx --test tests/*.test.ts",
     "vercel-build": "node scripts/vercel-build.mjs",
     "start": "node backend-dist/presentation/http/server.js",
     "api": "tsx backend/presentation/http/server.ts",
@@ -13,8 +16,8 @@
     "app": "npm run dev --prefix app",
     "dev": "concurrently -n api,app -c green,blue \"npm run api\" \"npm run app\""
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["agriculture", "ai", "openai", "vue", "typescript"],
+  "author": "Pere Torres Escayola",
   "license": "ISC",
   "engines": {
     "node": ">=20"

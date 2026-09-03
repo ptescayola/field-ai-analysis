@@ -7,6 +7,7 @@ import {
   type VercelRequest,
   type VercelResponse,
 } from "./_lib.js";
+import { toAnalysisResponse } from "../backend/presentation/http/analysis-response.js";
 
 export const config = {
   maxDuration: 60,
@@ -35,9 +36,9 @@ export default async function handler(
 
   try {
     const result = await getApplication().analyzeField.execute(file);
-    jsonResponse(req, res, result);
+    jsonResponse(req, res, toAnalysisResponse(result));
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Analysis failed";
-    errorResponse(req, res, message, 500);
+    console.error("Analysis failed", error);
+    errorResponse(req, res, "Analysis failed", 500);
   }
 }

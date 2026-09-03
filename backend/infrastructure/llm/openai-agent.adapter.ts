@@ -1,7 +1,7 @@
 import { zodResponseFormat } from "openai/helpers/zod";
-import type { ZodType } from "zod";
 import type {
   AgentPort,
+  AgentRunParams,
   AgentRunResult,
   PromptRepository,
 } from "../../domain/ports/agent.port.js";
@@ -12,12 +12,7 @@ import { validateAgentOutput } from "./validate-output.js";
 export class OpenAIAgentAdapter implements AgentPort {
   constructor(private readonly promptRepository: PromptRepository) {}
 
-  async run<T>(params: {
-    agentName: string;
-    input: unknown;
-    outputSchema: ZodType<T>;
-    responseName: string;
-  }): Promise<AgentRunResult<T>> {
+  async run<T>(params: AgentRunParams<T>): Promise<AgentRunResult<T>> {
     const { agentName, input, outputSchema, responseName } = params;
     const { content: systemPrompt, version: promptVersion } =
       await this.promptRepository.getPrompt(agentName);
