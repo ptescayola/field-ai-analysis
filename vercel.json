@@ -2,11 +2,11 @@
   "version": 2,
   "installCommand": "if [ -f scripts/vercel-install.mjs ]; then node scripts/vercel-install.mjs; else node ../scripts/vercel-install.mjs; fi",
   "buildCommand": "if [ -f scripts/vercel-build.mjs ]; then node scripts/vercel-build.mjs; else node ../scripts/vercel-build.mjs; fi",
-  "outputDirectory": "app/dist",
+  "outputDirectory": "dist",
   "functions": {
     "api/index.ts": {
       "maxDuration": 60,
-      "includeFiles": "{data,agents,dist}/**"
+      "includeFiles": "{data,agents,backend-dist}/**"
     }
   },
   "rewrites": [

@@ -78,8 +78,8 @@ npm run analyze -- --json --trace
 
 ```bash
 npm run build
-npm start        # serves API from dist/
-cd app && npm run build   # static UI → app/dist/
+npm start        # serves API from backend-dist/
+cd app && npm run build   # static UI → dist/ (repo root)
 ```
 
 Set `OPENAI_API_KEY` in the environment. Run from the project root so `./data` and `./agents` resolve correctly.
@@ -113,7 +113,7 @@ git push -u origin main
 5. Build settings should come from `vercel.json`:
    - Install: `npm install && npm install --prefix app`
    - Build: `npm run vercel-build`
-   - Output directory: `app/dist`
+   - Output directory: `dist`
 
 If you already created the project with Root Directory = `app`, fix it:
 **Project → Settings → General → Root Directory → Edit → clear the field → Save**, then redeploy.
@@ -134,7 +134,7 @@ Do **not** commit `.env` to git.
 Click **Deploy**. Vercel will:
 
 1. Install root + app dependencies
-2. Build the Vue app → `app/dist/`
+2. Build the Vue app → `dist/` (frontend) + `backend-dist/` (API)
 3. Deploy `api/index.ts` as a Node.js serverless function
 4. Route `/api/*` → API, everything else → SPA
 

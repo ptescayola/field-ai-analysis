@@ -8,7 +8,7 @@
     "skipLibCheck": true,
     "types": ["node"],
     "rootDir": "backend",
-    "outDir": "dist"
+    "outDir": "backend-dist"
   },
   "include": ["backend"]
 }

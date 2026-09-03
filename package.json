@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "vercel-build": "node scripts/vercel-build.mjs",
-    "start": "node dist/presentation/http/server.js",
+    "start": "node backend-dist/presentation/http/server.js",
     "api": "tsx backend/presentation/http/server.ts",
     "cli": "tsx backend/presentation/cli/index.ts",
     "analyze": "tsx backend/presentation/cli/index.ts",

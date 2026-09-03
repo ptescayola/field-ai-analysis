@@ -20,3 +20,10 @@ if (atRepoRoot) {
     "Unexpected project layout. Deploy from the repository root (Root Directory must be empty)."
   );
 }
+
+const staticIndex = atRepoRoot ? "dist/index.html" : "../dist/index.html";
+if (!existsSync(staticIndex)) {
+  throw new Error(
+    `Frontend build missing: expected ${staticIndex}. Check Vite outDir and Root Directory settings.`
+  );
+}
