@@ -6,8 +6,7 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "esModuleInterop": true,
-    "types": ["node"]
+    "esModuleInterop": true
   },
   "include": ["**/*.ts", "../backend/**/*.ts"]
 }

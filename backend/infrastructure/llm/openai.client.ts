@@ -5,7 +5,7 @@ let client: OpenAI | undefined;
 export function getOpenAIClient(): OpenAI {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error(
-      "Missing OPENAI_API_KEY. Copy .env.example to .env and add your OpenAI API key."
+      "Missing OPENAI_API_KEY."
     );
   }
 

@@ -61,7 +61,7 @@ Agent prompts live in `agents/*.md` (versioned via `agents/manifest.json`).
 ## Setup
 
 ```bash
-cp .env.example .env   # add your OPENAI_API_KEY
+cp .env   # add your OPENAI_API_KEY
 npm install
 cd app && npm install && cd ..
 ```
@@ -174,23 +174,6 @@ vercel link
 vercel env pull .env.local
 vercel dev
 ```
-
-### Troubleshooting
-
-
-| Issue | Fix |
-|-------|-----|
-| `504` / timeout on analyze | Upgrade to **Pro**; check `maxDuration: 60` in `vercel.json` |
-| `Missing OPENAI_API_KEY` | Add env var in Vercel dashboard, redeploy |
-| `/api/fields` returns **404** | You likely deploy project **"app"** with Root Directory = `app`. Fix: **Root Directory empty** on the project that serves your domain, or use `field-ai-analysis.vercel.app` |
-| `/api/*` returns **500** | Check Runtime Logs; handlers must use `@vercel/node` (`VercelRequest`/`VercelResponse`), not Web `Request` |
-| Empty fields list | Ensure `data/` is deployed (`includeFiles` in `vercel.json`) |
-| `ENOENT .../app/app/package.json` | **Root Directory** must be empty (repo root), not `app` |
-| CORS errors | Same-domain deploy should not need CORS; set `ALLOWED_ORIGIN` if using a custom domain on the app only |
-
-### Alternative: split frontend / backend
-
-If analyze timeouts persist, deploy **API on Railway/Fly.io** (`npm run build && npm start`) and set `VITE_API_URL` in the Vue app — requires a small code change in `app/src/api/client.ts`.
 
 ## API
 

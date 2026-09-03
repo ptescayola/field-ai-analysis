@@ -33,9 +33,7 @@ export class OpenAIAgentAdapter implements AgentPort {
           role: "user",
           content: [
             "Analyze the following input.",
-            "Respond in English.",
             "Return structured JSON only. No markdown or text outside the JSON object.",
-            "",
             JSON.stringify(input, null, 2),
           ].join("\n"),
         },
