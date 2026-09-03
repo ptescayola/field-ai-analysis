@@ -24,18 +24,7 @@
     "temperature_c": 29,
     "humidity_percent": 68,
     "rain_last_7_days_mm": 3,
-    "forecast": [
-      {
-        "day": "2026-09-02",
-        "rain_mm": 0,
-        "max_temperature_c": 30
-      },
-      {
-        "day": "2026-09-03",
-        "rain_mm": 12,
-        "max_temperature_c": 27
-      }
-    ]
+    "forecast": []
   },
   "vegetation": {
     "ndvi": 0.72,

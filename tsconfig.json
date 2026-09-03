@@ -6,8 +6,9 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "rootDir": "src",
+    "types": ["node"],
+    "rootDir": "backend",
     "outDir": "dist"
   },
-  "include": ["src"]
+  "include": ["backend"]
 }
