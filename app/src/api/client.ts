@@ -5,6 +5,12 @@ import type {
   WeatherForecast,
 } from "../types";
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+
+function apiUrl(path: string): string {
+  return `${API_BASE}${path}`;
+}
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, init);
   if (!response.ok) {
@@ -17,11 +23,11 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export function fetchFields(): Promise<FieldListItem[]> {
-  return request<FieldListItem[]>("/api/fields");
+  return request<FieldListItem[]>(apiUrl("/api/fields"));
 }
 
 export function fetchField(file: string): Promise<FieldData> {
-  return request<FieldData>(`/api/fields/${file}`);
+  return request<FieldData>(apiUrl(`/api/fields/${file}`));
 }
 
 export function fetchWeather(lat: number, lng: number): Promise<WeatherForecast> {
@@ -29,11 +35,11 @@ export function fetchWeather(lat: number, lng: number): Promise<WeatherForecast>
     lat: String(lat),
     lng: String(lng),
   });
-  return request<WeatherForecast>(`/api/weather?${params}`);
+  return request<WeatherForecast>(apiUrl(`/api/weather?${params}`));
 }
 
 export function analyzeField(file: string): Promise<PipelineResult> {
-  return request<PipelineResult>("/api/analyze", {
+  return request<PipelineResult>(apiUrl("/api/analyze"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ file }),

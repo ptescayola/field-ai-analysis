@@ -136,6 +136,11 @@ In **Project → Settings → Environment Variables**, add:
 |----------|-------|--------------|
 | `OPENAI_API_KEY` | `sk-...` | Production, Preview, Development |
 | `OPENAI_MODEL` | `gpt-4o-mini` | Production (optional) |
+| `APP_URL` | `https://app-eight-sigma-14.vercel.app` or your custom domain | Production (optional, for CORS) |
+
+Vercel sets `VERCEL_URL` and `VERCEL_PROJECT_PRODUCTION_URL` automatically — CORS uses those too.
+
+Leave `VITE_API_BASE_URL` **empty** when app and API share the same Vercel domain (default). Only set it if the API lives on a different host.
 
 Do **not** commit `.env` to git.
 
@@ -145,7 +150,7 @@ Click **Deploy**. Vercel will:
 
 1. Install root + app dependencies
 2. Build the Vue app → `dist/` (frontend) + `backend-dist/` (API)
-3. Deploy `api/index.ts` as a Node.js serverless function
+3. Deploy `api/[[...route]].ts` as a catch-all serverless function (handles `/api/fields`, `/api/analyze`, etc.)
 4. Route `/api/*` → API, everything else → SPA
 
 ### Step 5 — Verify

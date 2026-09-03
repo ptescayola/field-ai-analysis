@@ -7,20 +7,23 @@ function isValidFieldFile(file: string): boolean {
 }
 
 function getAllowedOrigins(): string[] {
-  const origins = [
+  const origins = new Set<string>([
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-  ];
+  ]);
 
-  if (process.env.ALLOWED_ORIGIN) {
-    origins.push(process.env.ALLOWED_ORIGIN);
+  for (const value of [
+    process.env.APP_URL,
+    process.env.ALLOWED_ORIGIN,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_BRANCH_URL,
+    process.env.VERCEL_URL,
+  ]) {
+    if (!value) continue;
+    origins.add(value.startsWith("http") ? value : `https://${value}`);
   }
 
-  if (process.env.VERCEL_URL) {
-    origins.push(`https://${process.env.VERCEL_URL}`);
-  }
-
-  return origins;
+  return [...origins];
 }
 
 export function createHonoApp(): Hono {
