@@ -157,6 +157,7 @@ vercel dev
 
 ### Troubleshooting
 
+
 | Issue | Fix |
 |-------|-----|
 | `504` / timeout on analyze | Upgrade to **Pro**; check `maxDuration: 60` in `vercel.json` |
