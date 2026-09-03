@@ -4,12 +4,13 @@
   "buildCommand": "if [ -f scripts/vercel-build.mjs ]; then node scripts/vercel-build.mjs; else node ../scripts/vercel-build.mjs; fi",
   "outputDirectory": "dist",
   "functions": {
-    "api/[[...route]].ts": {
+    "api/index.ts": {
       "maxDuration": 60,
       "includeFiles": "{data,agents}/**"
     }
   },
   "rewrites": [
-    { "source": "/((?!api).*)", "destination": "/index.html" }
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

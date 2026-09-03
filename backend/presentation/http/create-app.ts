@@ -27,7 +27,7 @@ function getAllowedOrigins(): string[] {
 }
 
 export function createHonoApp(): Hono {
-  const app = new Hono();
+  const app = new Hono().basePath("/api");
   const application = createApplication();
 
   app.use(
@@ -37,14 +37,14 @@ export function createHonoApp(): Hono {
     })
   );
 
-  app.get("/api/health", (c) => c.json({ status: "ok" }));
+  app.get("/health", (c) => c.json({ status: "ok" }));
 
-  app.get("/api/fields", async (c) => {
+  app.get("/fields", async (c) => {
     const fields = await application.listFields.execute();
     return c.json(fields);
   });
 
-  app.get("/api/fields/:file", async (c) => {
+  app.get("/fields/:file", async (c) => {
     const file = c.req.param("file");
     if (!isValidFieldFile(file)) {
       return c.json({ error: "Invalid field" }, 400);
@@ -54,7 +54,7 @@ export function createHonoApp(): Hono {
     return c.json(field);
   });
 
-  app.get("/api/weather", async (c) => {
+  app.get("/weather", async (c) => {
     const lat = Number(c.req.query("lat"));
     const lng = Number(c.req.query("lng"));
 
@@ -75,7 +75,7 @@ export function createHonoApp(): Hono {
     }
   });
 
-  app.post("/api/analyze", async (c) => {
+  app.post("/analyze", async (c) => {
     const body = (await c.req.json()) as { file?: string };
     const file = body.file ?? "field-001.json";
 

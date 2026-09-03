@@ -9,5 +9,5 @@
     "esModuleInterop": true,
     "types": ["node"]
   },
-  "include": ["[[...route]].ts", "../backend/**/*.ts"]
+  "include": ["index.ts", "../backend/**/*.ts"]
 }

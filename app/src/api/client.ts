@@ -5,10 +5,11 @@ import type {
   WeatherForecast,
 } from "../types";
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
-
+/** Same-origin relative paths — works in dev (Vite proxy) and prod (Vercel). */
 function apiUrl(path: string): string {
-  return `${API_BASE}${path}`;
+  const configured = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "");
+  if (configured) return `${configured}${path}`;
+  return path;
 }
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
