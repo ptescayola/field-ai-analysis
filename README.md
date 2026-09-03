@@ -109,9 +109,14 @@ git push -u origin main
 1. Go to [vercel.com/new](https://vercel.com/new)
 2. Import the GitHub repository
 3. **Framework preset:** Other (not Vite — root `vercel.json` controls the build)
-4. Leave build settings as detected from `vercel.json`:
-   - Build command: `npm install --prefix app && npm run build --prefix app`
+4. **Root Directory:** leave **empty** (repository root). Do **not** set it to `app` — that causes `app/app/package.json` errors and breaks the API.
+5. Build settings should come from `vercel.json`:
+   - Install: `npm install && npm install --prefix app`
+   - Build: `npm run vercel-build`
    - Output directory: `app/dist`
+
+If you already created the project with Root Directory = `app`, fix it:
+**Project → Settings → General → Root Directory → Edit → clear the field → Save**, then redeploy.
 
 ### Step 3 — Environment variables
 
@@ -163,6 +168,7 @@ vercel dev
 | `504` / timeout on analyze | Upgrade to **Pro**; check `maxDuration: 60` in `vercel.json` |
 | `Missing OPENAI_API_KEY` | Add env var in Vercel dashboard, redeploy |
 | Empty fields list | Ensure `data/` is deployed (`includeFiles` in `vercel.json`) |
+| `ENOENT .../app/app/package.json` | **Root Directory** must be empty (repo root), not `app` |
 | CORS errors | Same-domain deploy should not need CORS; set `ALLOWED_ORIGIN` if using a custom domain on the app only |
 
 ### Alternative: split frontend / backend
