@@ -12,11 +12,12 @@ function resolveCondition(code: number, rainMm: number): WeatherCondition {
   const rainCodes = [51, 53, 55, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99];
   if (rainMm >= 0.5 || rainCodes.includes(code)) return "rain";
 
-  // No rain expected → sun (Open-Meteo may still report fog/overcast codes)
   return "sun";
 }
 
-const condition = computed(() => resolveCondition(props.weatherCode, props.rainMm));
+const condition = computed(() =>
+  resolveCondition(props.weatherCode, props.rainMm)
+);
 
 const label = computed(() => {
   switch (condition.value) {
@@ -48,7 +49,11 @@ const label = computed(() => {
       </g>
     </svg>
 
-    <svg v-else-if="condition === 'partly-cloudy'" viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      v-else-if="condition === 'partly-cloudy'"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <circle cx="8" cy="8" r="3.25" fill="currentColor" />
       <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
         <line x1="8" y1="2" x2="8" y2="3.5" />
@@ -63,7 +68,11 @@ const label = computed(() => {
       />
     </svg>
 
-    <svg v-else-if="condition === 'cloud'" viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      v-else-if="condition === 'cloud'"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <path
         d="M6.5 18h11a4.5 4.5 0 0 0 .5-9 6 6 0 0 0-11.3-1.8A3.8 3.8 0 0 0 6.5 18z"
         fill="currentColor"
@@ -88,7 +97,7 @@ const label = computed(() => {
 <style scoped>
 .weather-icon {
   display: inline-flex;
-  color: var(--amber);
+  color: var(--green);
   line-height: 0;
 }
 

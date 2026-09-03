@@ -49,7 +49,8 @@ Agent prompts live in `agents/*.md` (versioned via `agents/manifest.json`).
 ## Setup
 
 ```bash
-cp .env   # add your OPENAI_API_KEY
+cp .env.example .env
+# Replace the placeholder in .env with your own OPENAI_API_KEY
 npm install
 npm install --prefix app
 ```
@@ -119,6 +120,13 @@ Leave `VITE_API_BASE_URL` **empty** when app and API share the same Vercel domai
 **Redeploy after adding or changing env vars** — existing deployments do not pick them up automatically.
 
 Do **not** commit `.env` to git.
+
+### Security
+
+- Keep real credentials in local `.env` files or Vercel Environment Variables.
+- Only placeholders belong in `.env.example` and documentation.
+- Never expose `OPENAI_API_KEY` through frontend variables prefixed with `VITE_`.
+- Rotate a credential immediately if it is accidentally committed or printed.
 
 ### Verify
 

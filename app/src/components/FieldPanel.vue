@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { fetchWeather } from "../api/client";
+import CropIcon from "./CropIcon.vue";
 import WeatherIcon from "./WeatherIcon.vue";
 import type { FieldData, WeatherForecast } from "../types";
 
@@ -18,8 +19,8 @@ const rainNext7Days = computed(() => {
   return Math.round(total * 10) / 10;
 });
 
-function formatGrowthStage(stage: string): string {
-  return stage.replaceAll("_", " ");
+function formatCropName(value: string): string {
+  return value.replaceAll("_", " ");
 }
 
 function formatDate(date: string): string {
@@ -61,8 +62,10 @@ watch(
     <div class="grid">
       <div class="stat">
         <span class="label">Crop</span>
-        <strong>{{ field.crop.type }} · {{ field.crop.variety }}</strong>
-        <span class="sub">{{ formatGrowthStage(field.crop.growth_stage) }}</span>
+        <div class="crop-value">
+          <CropIcon :crop="field.crop.type" />
+          <strong>{{ formatCropName(field.crop.variety) }}</strong>
+        </div>
       </div>
       <div class="stat">
         <span class="label">Area</span>
@@ -172,6 +175,17 @@ h3 {
   font-size: 1.05rem;
 }
 
+.crop-value {
+  min-height: 2.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.crop-value strong {
+  text-transform: capitalize;
+}
+
 .sub {
   font-size: 0.8rem;
   color: var(--text-muted);
@@ -270,10 +284,6 @@ h3 {
 .farmer-note {
   font-size: 0.9rem;
   color: var(--text);
-  padding: 0.65rem 0.85rem;
-  background: var(--surface-muted);
-  border-radius: 8px;
-  border-left: 3px solid var(--green-light);
   line-height: 1.4;
 }
 </style>

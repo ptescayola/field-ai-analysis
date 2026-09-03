@@ -1,7 +1,7 @@
 {
   "field": {
     "id": "FIELD-003",
-    "name": "Pla de Lleida",
+    "name": "Pla d'Urgell, Catalunya",
     "location": {
       "lat": 41.62,
       "lng": 0.62
@@ -33,6 +33,6 @@
   "observations": [
     "Visible leaf rolling and wilting in the central sector",
     "Spider mite activity reported on lower leaves",
-    "Irrigation system offline for 4 days due to pump maintenance"
+    "Irrigation system has been offline for four days due to pump maintenance"
   ]
 }

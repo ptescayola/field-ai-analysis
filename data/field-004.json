@@ -1,0 +1,38 @@
+{
+  "field": {
+    "id": "FIELD-004",
+    "name": "Campiña de Jaén, Andalucía",
+    "location": {
+      "lat": 37.77,
+      "lng": -3.79
+    },
+    "area_hectares": 15.2
+  },
+  "crop": {
+    "type": "olive",
+    "variety": "picual",
+    "planting_date": "2014-02-12",
+    "growth_stage": "fruit_filling"
+  },
+  "soil": {
+    "type": "clay_loam",
+    "moisture_percent": 22,
+    "temperature_c": 29.3,
+    "ph": 7.9
+  },
+  "weather": {
+    "temperature_c": 35,
+    "humidity_percent": 33,
+    "rain_last_7_days_mm": 0,
+    "forecast": []
+  },
+  "vegetation": {
+    "ndvi": 0.61,
+    "ndvi_previous_week": 0.63
+  },
+  "observations": [
+    "Trees show mild midday leaf folding on the south-facing slope",
+    "Drip irrigation emitters were checked and are operating normally",
+    "No signs of olive fruit fly detected during the latest inspection"
+  ]
+}

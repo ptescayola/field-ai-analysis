@@ -1,37 +1,38 @@
 {
   "field": {
     "id": "FIELD-001",
-    "name": "Son Puig",
+    "name": "O Salnés, Galicia",
     "location": {
-      "lat": 39.62,
-      "lng": 2.91
+      "lat": 42.51,
+      "lng": -8.81
     },
-    "area_hectares": 4.2
+    "area_hectares": 6.8
   },
   "crop": {
-    "type": "tomato",
-    "variety": "ramallet",
-    "planting_date": "2026-04-15",
-    "growth_stage": "fruit_development"
+    "type": "grape",
+    "variety": "albarino",
+    "planting_date": "2019-03-18",
+    "growth_stage": "ripening"
   },
   "soil": {
-    "type": "loam",
-    "moisture_percent": 31,
-    "temperature_c": 24.8,
-    "ph": 6.7
+    "type": "sandy_loam",
+    "moisture_percent": 67,
+    "temperature_c": 18.4,
+    "ph": 5.8
   },
   "weather": {
-    "temperature_c": 29,
-    "humidity_percent": 68,
-    "rain_last_7_days_mm": 3,
+    "temperature_c": 21,
+    "humidity_percent": 84,
+    "rain_last_7_days_mm": 36,
     "forecast": []
   },
   "vegetation": {
-    "ndvi": 0.72,
-    "ndvi_previous_week": 0.76
+    "ndvi": 0.79,
+    "ndvi_previous_week": 0.8
   },
   "observations": [
-    "Some yellow leaves detected in the north-west area",
-    "No visible pests reported"
+    "Canopy remains vigorous after several days of Atlantic rainfall",
+    "Minor mildew symptoms detected in two low-ventilation rows",
+    "No water stress observed"
   ]
 }
