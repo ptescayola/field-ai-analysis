@@ -180,5 +180,7 @@ aplicación.
 - **Autor:** Pere Torres Escayola
 - **Email:** [ptescayola@gmail.com](mailto:ptescayola@gmail.com)
 - **LinkedIn:** [linkedin.com/in/pere-torres](https://www.linkedin.com/in/pere-torres/)
-- **Tiempo invertido:** aproximadamente 3 horas
+- **Tiempo invertido:**  2 horas aprox
+- **Desarrollo asistido por IA:** 98 % del proyecto se ha
+  construido utilizando Cursor bajo mi dirección, revisión y criterio técnico.
 
