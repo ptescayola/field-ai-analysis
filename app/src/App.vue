@@ -94,8 +94,6 @@ onMounted(() => {
         <div v-if="fields.length === 0" class="state">
           No fields are available.
         </div>
-        <div v-if="loadingField" class="state">Loading field data…</div>
-        <FieldPanel v-else-if="fieldData" :field="fieldData" />
 
         <div
           v-if="analyzing"
@@ -109,6 +107,9 @@ onMounted(() => {
         </div>
 
         <AnalysisView v-else-if="result" :result="result" />
+
+        <div v-if="loadingField" class="state">Loading field data…</div>
+        <FieldPanel v-else-if="fieldData" :field="fieldData" />
       </template>
     </main>
 
