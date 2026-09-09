@@ -46,3 +46,19 @@ export function analyzeField(file: string): Promise<PipelineResult> {
     body: JSON.stringify({ file }),
   });
 }
+
+export function analyzeFieldImage(
+  imageBase64: string,
+  mimeType: string,
+  fileName: string
+): Promise<PipelineResult> {
+  return request<PipelineResult>(apiUrl("/api/analyze-image"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      image: imageBase64,
+      mimeType,
+      fileName,
+    }),
+  });
+}

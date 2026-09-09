@@ -1,6 +1,7 @@
 import { loadConfig } from "./config.js";
 import { EnrichFieldWeatherService } from "./application/services/enrich-field-weather.service.js";
 import { FieldAnalysisOrchestrator } from "./application/services/field-analysis.orchestrator.js";
+import { AnalyzeFieldImageUseCase } from "./application/use-cases/analyze-field-image.use-case.js";
 import { AnalyzeFieldUseCase } from "./application/use-cases/analyze-field.use-case.js";
 import { GetFieldUseCase } from "./application/use-cases/get-field.use-case.js";
 import { GetWeatherForecastUseCase } from "./application/use-cases/get-weather-forecast.use-case.js";
@@ -13,6 +14,7 @@ import { OpenMeteoAdapter } from "./infrastructure/weather/open-meteo.adapter.js
 
 export interface Application {
   analyzeField: AnalyzeFieldUseCase;
+  analyzeFieldImage: AnalyzeFieldImageUseCase;
   getField: GetFieldUseCase;
   listFields: ListFieldsUseCase;
   getWeatherForecast: GetWeatherForecastUseCase;
@@ -36,6 +38,12 @@ export function createApplication(): Application {
       fieldRepository,
       enrichFieldWeather,
       orchestrator,
+      promptRepository
+    ),
+    analyzeFieldImage: new AnalyzeFieldImageUseCase(
+      enrichFieldWeather,
+      orchestrator,
+      agentPort,
       promptRepository
     ),
     getField: new GetFieldUseCase(fieldRepository),

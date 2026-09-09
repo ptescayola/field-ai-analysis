@@ -20,18 +20,29 @@ export class OpenAIAgentAdapter implements AgentPort {
     const model = getModel();
     const startedAt = performance.now();
 
+    const textPrompt = [
+      "Analyze the following input.",
+      "Return structured JSON only. No markdown or text outside the JSON object.",
+      JSON.stringify(input, null, 2),
+    ].join("\n");
+
+    const userContent = params.image
+      ? [
+          { type: "text" as const, text: textPrompt },
+          {
+            type: "image_url" as const,
+            image_url: {
+              url: `data:${params.image.mimeType};base64,${params.image.base64}`,
+            },
+          },
+        ]
+      : textPrompt;
+
     const completion = await client.chat.completions.parse({
       model,
       messages: [
         { role: "system", content: systemPrompt },
-        {
-          role: "user",
-          content: [
-            "Analyze the following input.",
-            "Return structured JSON only. No markdown or text outside the JSON object.",
-            JSON.stringify(input, null, 2),
-          ].join("\n"),
-        },
+        { role: "user", content: userContent },
       ],
       response_format: zodResponseFormat(outputSchema, responseName),
     });

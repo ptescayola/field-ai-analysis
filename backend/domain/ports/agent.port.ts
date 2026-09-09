@@ -16,11 +16,17 @@ export interface AgentRunResult<T> {
   trace: AgentTrace;
 }
 
+export interface AgentImageInput {
+  base64: string;
+  mimeType: string;
+}
+
 export interface AgentRunParams<T> {
   agentName: string;
   input: unknown;
   outputSchema: ZodType<T>;
   responseName: string;
+  image?: AgentImageInput;
 }
 
 export interface AgentPort {

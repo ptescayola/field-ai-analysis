@@ -1,59 +1,25 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { fetchWeather } from "../api/client";
+import { computed } from "vue";
+import { useWeatherForecast } from "../composables/useWeatherForecast";
 import CropIcon from "./CropIcon.vue";
-import WeatherIcon from "./WeatherIcon.vue";
-import type { FieldData, WeatherForecast } from "../types";
+import WeatherForecastView from "./WeatherForecastView.vue";
+import type { FieldData } from "../types";
 
 const props = defineProps<{
   field: FieldData;
 }>();
 
-const forecast = ref<WeatherForecast | null>(null);
-const loadingForecast = ref(false);
-const forecastError = ref<string | null>(null);
+const latitude = computed(() => props.field.field.location.lat);
+const longitude = computed(() => props.field.field.location.lng);
 
-const rainNext7Days = computed(() => {
-  if (!forecast.value) return null;
-  const total = forecast.value.days.reduce((sum, day) => sum + day.rain_mm, 0);
-  return Math.round(total * 10) / 10;
-});
+const { forecast, loading, error, rainNext7Days } = useWeatherForecast(
+  latitude,
+  longitude
+);
 
 function formatCropName(value: string): string {
   return value.replaceAll("_", " ");
 }
-
-function formatDate(date: string): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  }).format(new Date(`${date}T12:00:00`));
-}
-
-async function loadForecast(): Promise<void> {
-  const { lat, lng } = props.field.field.location;
-  loadingForecast.value = true;
-  forecastError.value = null;
-  forecast.value = null;
-
-  try {
-    forecast.value = await fetchWeather(lat, lng);
-  } catch (error) {
-    forecastError.value =
-      error instanceof Error ? error.message : "Failed to load weather forecast";
-  } finally {
-    loadingForecast.value = false;
-  }
-}
-
-watch(
-  () => [props.field.field.location.lat, props.field.field.location.lng] as const,
-  () => {
-    void loadForecast();
-  },
-  { immediate: true }
-);
 </script>
 
 <template>
@@ -94,26 +60,14 @@ watch(
       </div>
     </div>
 
-    <div class="forecast">
-      <div class="forecast-header">
-        <h3>7-day forecast</h3>
-        <span v-if="forecast" class="source">
-          {{ field.field.location.lat.toFixed(2) }}°,
-          {{ field.field.location.lng.toFixed(2) }}° · Open-Meteo
-        </span>
-      </div>
-
-      <p v-if="loadingForecast" class="forecast-state">Loading live weather…</p>
-      <p v-else-if="forecastError" class="forecast-state error">
-        {{ forecastError }}
-      </p>
-      <ul v-else-if="forecast" class="forecast-days">
-        <li v-for="day in forecast.days" :key="day.date" class="forecast-day">
-          <WeatherIcon :weather-code="day.weather_code" :rain-mm="day.rain_mm" />
-          <span class="forecast-date">{{ formatDate(day.date) }}</span>
-          <span class="forecast-metrics">{{ day.rain_mm }} mm · {{ day.max_temperature_c }}°C</span>
-        </li>
-      </ul>
+    <div class="forecast-section">
+      <WeatherForecastView
+        :forecast="forecast"
+        :loading="loading"
+        :error="error"
+        :latitude="latitude"
+        :longitude="longitude"
+      />
     </div>
 
     <div v-if="field.observations.length" class="farmer-notes">
@@ -191,73 +145,15 @@ h3 {
   color: var(--text-muted);
 }
 
-.forecast {
+.forecast-section {
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid var(--border);
 }
 
-.forecast-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
-  flex-wrap: wrap;
-}
-
 .source {
   font-size: 0.75rem;
   color: var(--text-muted);
-}
-
-.forecast-state {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-}
-
-.forecast-state.error {
-  color: var(--red);
-}
-
-.forecast-days,
-.farmer-notes-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.forecast-days {
-  display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding-bottom: 0.25rem;
-}
-
-.forecast-day {
-  flex: 1 1 0;
-  min-width: 5.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.65rem 0.4rem;
-  background: var(--surface-muted);
-  border-radius: 8px;
-  text-align: center;
-}
-
-.forecast-date {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  line-height: 1.2;
-}
-
-.forecast-metrics {
-  font-size: 0.8rem;
-  line-height: 1.3;
 }
 
 .farmer-notes {
@@ -276,6 +172,9 @@ h3 {
 }
 
 .farmer-notes-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;

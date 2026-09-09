@@ -5,6 +5,7 @@ import {
   dataAnalystOutputSchema,
   riskAnalystOutputSchema,
 } from "../../domain/analysis/analysis.schema.js";
+import type { ImageAnalystOutput } from "../../domain/analysis/image-analyst.schema.js";
 import type { FieldData } from "../../domain/field/field.schema.js";
 import type { AgentPort } from "../../domain/ports/agent.port.js";
 import type { PipelineMeta, PipelineResult } from "../../domain/pipeline/pipeline.schema.js";
@@ -18,7 +19,8 @@ export class FieldAnalysisOrchestrator {
 
   async run(
     field: FieldData,
-    promptVersions: Record<string, string>
+    promptVersions: Record<string, string>,
+    imageAnalysis?: ImageAnalystOutput
   ): Promise<PipelineResult> {
     const pipelineStartedAt = performance.now();
 
@@ -78,6 +80,7 @@ export class FieldAnalysisOrchestrator {
         data_analyst: dataAnalystRun.output,
         agronomist: agronomistRun.output,
         risk_analyst: riskAnalystRun.output,
+        ...(imageAnalysis ? { image_analyst: imageAnalysis } : {}),
       },
     });
 

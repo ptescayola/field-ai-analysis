@@ -87,6 +87,14 @@ const dataAnalystObservations = computed(() =>
     assessmentCopy: getAssessmentCopy(obs.assessment),
   }))
 );
+
+const imageAnalyst = computed(
+  () => props.result.analysis.agents.image_analyst ?? null
+);
+
+function formatCategory(category: string): string {
+  return formatRiskType(category);
+}
 </script>
 
 <template>
@@ -141,6 +149,41 @@ const dataAnalystObservations = computed(() =>
     </section>
 
     <section class="agents">
+      <article v-if="imageAnalyst" class="card agent image-agent">
+        <h3>Image Analyst</h3>
+        <p class="image-summary">{{ imageAnalyst.summary }}</p>
+        <dl>
+          <div>
+            <dt>Crop detected</dt>
+            <dd>
+              <template v-if="imageAnalyst.crop_detected">
+                {{ imageAnalyst.crop_detected.type }}
+                ({{ formatPercent(imageAnalyst.crop_detected.confidence) }})
+              </template>
+              <template v-else>Not identifiable</template>
+            </dd>
+          </div>
+          <div><dt>Growth stage</dt><dd>{{ imageAnalyst.growth_stage }}</dd></div>
+          <div><dt>Plant health</dt><dd>{{ imageAnalyst.estimated_plant_health }}</dd></div>
+          <div><dt>Irrigation signals</dt><dd>{{ imageAnalyst.irrigation_signals }}</dd></div>
+        </dl>
+        <ul v-if="imageAnalyst.visual_observations.length" class="image-observations">
+          <li v-for="(obs, i) in imageAnalyst.visual_observations" :key="i">
+            <div class="obs-row">
+              <strong>{{ formatCategory(obs.category) }}</strong>
+              <span
+                v-if="obs.severity"
+                :class="['badge', severityClass(obs.severity)]"
+              >
+                {{ obs.severity }}
+              </span>
+            </div>
+            <p>{{ obs.observation }}</p>
+          </li>
+        </ul>
+        <p class="limitations">{{ imageAnalyst.limitations }}</p>
+      </article>
+
       <article class="card agent">
         <h3>Data Analyst</h3>
         <ul class="observations">
@@ -477,5 +520,39 @@ const dataAnalystObservations = computed(() =>
 .compact li {
   border: none;
   padding: 0.25rem 0;
+}
+
+.image-agent {
+  border-color: #ffc971;
+  background: linear-gradient(135deg, #fff 0%, #fffdf5 100%);
+}
+
+.image-summary {
+  margin: 0 0 0.85rem;
+  line-height: 1.55;
+}
+
+.image-observations {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.image-observations li p {
+  margin: 0.3rem 0 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.limitations {
+  margin: 0.85rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-style: italic;
 }
 </style>

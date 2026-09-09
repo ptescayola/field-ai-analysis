@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { imageAnalystOutputSchema } from "./image-analyst.schema.js";
 
 export const severitySchema = z.enum(["low", "medium", "high"]);
 
@@ -48,6 +49,7 @@ export const analysisOutputSchema = z.object({
     data_analyst: dataAnalystOutputSchema,
     agronomist: agronomistOutputSchema,
     risk_analyst: riskAnalystOutputSchema,
+    image_analyst: imageAnalystOutputSchema.optional(),
   }),
 });
 

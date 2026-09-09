@@ -61,6 +61,31 @@ export interface Risk {
   confidence: number;
 }
 
+export interface SelectedImage {
+  base64: string;
+  mimeType: string;
+  previewUrl: string;
+  fileName: string;
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+export interface ImageAnalystOutput {
+  summary: string;
+  crop_detected: { type: string; confidence: number } | null;
+  growth_stage: string;
+  visual_observations: Array<{
+    category: string;
+    observation: string;
+    severity: "low" | "medium" | "high" | null;
+  }>;
+  estimated_plant_health: "poor" | "fair" | "good" | "excellent";
+  irrigation_signals: string;
+  limitations: string;
+}
+
 export interface AnalysisOutput {
   field_id: string;
   field_name: string;
@@ -90,6 +115,7 @@ export interface AnalysisOutput {
       reasoning: string;
     };
     risk_analyst: { risks: Risk[] };
+    image_analyst?: ImageAnalystOutput;
   };
 }
 

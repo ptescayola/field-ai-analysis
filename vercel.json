@@ -7,6 +7,9 @@
     "api/analyze.ts": {
       "maxDuration": 60
     },
+    "api/analyze-image.ts": {
+      "maxDuration": 60
+    },
     "api/**/*.ts": {
       "includeFiles": "{data,agents}/**"
     }

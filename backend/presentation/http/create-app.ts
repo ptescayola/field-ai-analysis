@@ -8,6 +8,7 @@ import {
   isValidFieldFile,
   parseCoordinates,
 } from "./request-utils.js";
+import { parseImagePayload } from "./image-request-utils.js";
 
 export function createHonoApp(): Hono {
   const app = new Hono().basePath("/api");
@@ -59,6 +60,31 @@ export function createHonoApp(): Hono {
     } catch (error) {
       const message = getErrorMessage(error, "Weather fetch failed");
       return c.json({ error: message }, 502);
+    }
+  });
+
+  app.post("/analyze-image", async (c) => {
+    const body = await c.req.json();
+    const parsedImage = parseImagePayload(body);
+
+    if ("error" in parsedImage) {
+      return c.json({ error: parsedImage.error }, 400);
+    }
+
+    try {
+      const result = await application.analyzeFieldImage.execute(
+        parsedImage,
+        parsedImage.fileName
+      );
+      return c.json(toAnalysisResponse(result));
+    } catch (error) {
+      console.error("Image analysis failed", error);
+      const message = getErrorMessage(
+        error,
+        "Image analysis failed"
+      );
+      const status = message.includes("Invalid image filename") ? 400 : 500;
+      return c.json({ error: message }, status);
     }
   });
 

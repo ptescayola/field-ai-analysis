@@ -1,38 +1,38 @@
 <script setup lang="ts">
-import type { FieldListItem } from "../types";
+import { RouterLink, useRoute } from "vue-router";
 
 defineProps<{
-  fields: FieldListItem[];
-  selectedFile: string;
-  loadingFields: boolean;
-  loadingField: boolean;
-  analyzing: boolean;
+  eyebrow?: string;
+  experimental?: boolean;
 }>();
 
-const emit = defineEmits<{
-  "update:selectedFile": [file: string];
-  analyze: [];
-}>();
+const route = useRoute();
 
-function selectField(event: Event): void {
-  emit("update:selectedFile", (event.target as HTMLSelectElement).value);
-}
+const navItems = [
+  { to: "/", label: "Field analysis" },
+  { to: "/image", label: "Image analysis", experimental: true },
+] as const;
 </script>
 
 <template>
   <header class="header">
     <div class="header-inner">
       <div class="title">
-        <p class="eyebrow">Field analysis with specialized agents</p>
+        <p class="eyebrow">
+          {{ eyebrow ?? "Field analysis with specialized agents" }}
+          <span v-if="experimental" class="experimental-badge">Experimental</span>
+        </p>
         <h1>
-          <img
-            src="/favicon.ico"
-            alt=""
-            class="title-icon"
-            width="24"
-            height="24"
-          />
-          AI Agronomic Copilot
+          <RouterLink to="/" class="title-link">
+            <img
+              src="/favicon.ico"
+              alt=""
+              class="title-icon"
+              width="24"
+              height="24"
+            />
+            AI Agronomic Copilot
+          </RouterLink>
         </h1>
         <p class="meta">
           Pere Torres Escayola
@@ -41,27 +41,21 @@ function selectField(event: Event): void {
         </p>
       </div>
 
-      <div class="controls">
-        <label for="field-select">Field</label>
-        <div class="actions">
-          <select
-            id="field-select"
-            :value="selectedFile"
-            :disabled="loadingFields || analyzing"
-            @change="selectField"
-          >
-            <option v-for="field in fields" :key="field.file" :value="field.file">
-              {{ field.name }} ({{ field.id }})
-            </option>
-          </select>
-          <button
-            class="analyze-button"
-            :disabled="!selectedFile || analyzing || loadingField"
-            @click="emit('analyze')"
-          >
-            {{ analyzing ? "Analyzing…" : "Analyze field" }}
-          </button>
-        </div>
+      <nav class="nav" aria-label="Main">
+        <RouterLink
+          v-for="item in navItems"
+          :key="item.to"
+          :to="item.to"
+          class="nav-link"
+          :class="{ active: route.path === item.to }"
+        >
+          {{ item.label }}
+          <span v-if="'experimental' in item" class="nav-badge">Beta</span>
+        </RouterLink>
+      </nav>
+
+      <div v-if="$slots.actions" class="controls">
+        <slot name="actions" />
       </div>
     </div>
   </header>
@@ -77,27 +71,31 @@ function selectField(event: Event): void {
 .header-inner {
   max-width: 1100px;
   margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem 1.5rem;
   align-items: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
 }
 
 .title {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  grid-column: 1;
 }
 
 .title h1 {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.title-link {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin: 0;
-  font-size: 2rem;
   color: #fff;
-  line-height: 1.15;
+  text-decoration: none;
 }
 
 .title-icon {
@@ -112,10 +110,21 @@ function selectField(event: Event): void {
 }
 
 .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.8rem;
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.experimental-badge {
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 18%);
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
 }
 
 .meta {
@@ -128,65 +137,83 @@ function selectField(event: Event): void {
   opacity: 0.6;
 }
 
-.controls {
+.nav {
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  font-size: 0.8rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
-.actions {
-  display: flex;
-  gap: 0.75rem;
+.nav-link {
+  display: inline-flex;
   align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 10%);
+  color: rgb(255 255 255 / 90%);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.nav-link:hover {
+  background: rgb(255 255 255 / 18%);
+  border-color: rgb(255 255 255 / 45%);
+  color: #fff;
+}
+
+.nav-link.active {
+  background: #fff;
+  border-color: #fff;
+  color: var(--green);
+}
+
+.nav-badge {
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  background: var(--amber-pale);
+  color: #8a6500;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.controls {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
-select {
-  min-width: 220px;
-  padding: 0.55rem 0.75rem;
-  border: 0;
-  border-radius: 8px;
-  background: rgb(255 255 255 / 95%);
-  color: var(--text);
-  font: inherit;
-  font-size: 0.95rem;
-}
-
-.analyze-button {
-  padding: 0.6rem 1.25rem;
-  border: 0;
-  border-radius: 8px;
-  background: #fff;
-  color: var(--green);
-  font-size: 0.95rem;
-  font-weight: 600;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.analyze-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
-}
-
-@media (max-width: 560px) {
-  .header-inner,
-  .actions {
-    align-items: stretch;
+@media (max-width: 720px) {
+  .header-inner {
+    grid-template-columns: 1fr;
   }
 
-  .header-inner,
-  .actions {
-    flex-direction: column;
+  .nav {
+    grid-column: 1;
+    grid-row: auto;
+    justify-content: flex-start;
+  }
+
+  .controls {
+    justify-content: stretch;
   }
 
   .title h1 {
     font-size: 1.65rem;
-  }
-
-  select {
-    width: 100%;
-    min-width: 0;
   }
 }
 </style>
