@@ -72,8 +72,25 @@ export interface SelectedImage {
   };
 }
 
+export type VegetationType =
+  | "tree"
+  | "vine"
+  | "shrub"
+  | "herbaceous"
+  | "mixed"
+  | "unknown";
+
+export interface SpeciesCandidate {
+  common_name: string;
+  scientific_name: string | null;
+  confidence: number;
+}
+
 export interface ImageAnalystOutput {
   summary: string;
+  vegetation_type: VegetationType;
+  species_candidates: SpeciesCandidate[];
+  variety_guess: string | null;
   crop_detected: { type: string; confidence: number } | null;
   growth_stage: string;
   visual_observations: Array<{

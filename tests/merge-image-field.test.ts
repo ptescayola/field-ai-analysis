@@ -9,6 +9,15 @@ import {
 
 const imageAnalysis: ImageAnalystOutput = {
   summary: "Vines show moderate vigor with some leaf yellowing.",
+  vegetation_type: "vine",
+  species_candidates: [
+    {
+      common_name: "grapevine",
+      scientific_name: "Vitis vinifera",
+      confidence: 0.82,
+    },
+  ],
+  variety_guess: "Albariño",
   crop_detected: { type: "grape", confidence: 0.82 },
   growth_stage: "veraison",
   visual_observations: [
@@ -56,7 +65,9 @@ it("mergeImageIntoField appends image observations and updates growth stage", ()
   const merged = mergeImageIntoField(field, imageAnalysis);
 
   assert.equal(merged.crop.type, "grape");
+  assert.equal(merged.crop.variety, "Albariño");
   assert.equal(merged.crop.growth_stage, "veraison");
+  assert.ok(merged.observations.some((item) => item.includes("Species candidates")));
   assert.match(merged.observations[0], /Image analysis summary/);
   assert.ok(
     merged.observations.some((item) => item.includes("water stress"))

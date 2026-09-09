@@ -7,6 +7,51 @@ function formatObservation(category: string, observation: string): string {
   return `[Image] ${label}: ${observation}`;
 }
 
+function resolveCropType(imageAnalysis: ImageAnalystOutput): string {
+  if (
+    imageAnalysis.crop_detected &&
+    imageAnalysis.crop_detected.confidence >= 0.5
+  ) {
+    return imageAnalysis.crop_detected.type;
+  }
+
+  const topCandidate = imageAnalysis.species_candidates[0];
+  if (topCandidate && topCandidate.confidence >= 0.5) {
+    return topCandidate.common_name;
+  }
+
+  return "unknown";
+}
+
+function resolveVariety(imageAnalysis: ImageAnalystOutput): string {
+  if (imageAnalysis.variety_guess) return imageAnalysis.variety_guess;
+  return "unknown";
+}
+
+function buildSpeciesObservations(imageAnalysis: ImageAnalystOutput): string[] {
+  const lines: string[] = [
+    `Vegetation type from image: ${imageAnalysis.vegetation_type}`,
+  ];
+
+  if (imageAnalysis.species_candidates.length > 0) {
+    const candidates = imageAnalysis.species_candidates
+      .map((candidate) => {
+        const scientific = candidate.scientific_name
+          ? ` (${candidate.scientific_name})`
+          : "";
+        return `${candidate.common_name}${scientific} ${Math.round(candidate.confidence * 100)}%`;
+      })
+      .join("; ");
+    lines.push(`Species candidates from image: ${candidates}`);
+  }
+
+  if (imageAnalysis.variety_guess) {
+    lines.push(`Variety guess from image: ${imageAnalysis.variety_guess}`);
+  }
+
+  return lines;
+}
+
 export function mergeImageIntoField(
   field: FieldData,
   imageAnalysis: ImageAnalystOutput
@@ -17,22 +62,25 @@ export function mergeImageIntoField(
 
   const mergedObservations = [
     `Image analysis summary: ${imageAnalysis.summary}`,
+    ...buildSpeciesObservations(imageAnalysis),
     `Irrigation signals from image: ${imageAnalysis.irrigation_signals}`,
     ...imageObservations,
     ...field.observations,
   ];
 
-  const cropType =
-    imageAnalysis.crop_detected &&
-    imageAnalysis.crop_detected.confidence >= 0.5
-      ? imageAnalysis.crop_detected.type
-      : field.crop.type;
+  const cropType = resolveCropType(imageAnalysis);
+  const resolvedCropType = cropType !== "unknown" ? cropType : field.crop.type;
 
   return {
     ...field,
     crop: {
       ...field.crop,
-      type: cropType,
+      type: resolvedCropType,
+      variety:
+        imageAnalysis.variety_guess &&
+        imageAnalysis.variety_guess !== "unknown"
+          ? imageAnalysis.variety_guess
+          : field.crop.variety,
       growth_stage:
         imageAnalysis.growth_stage !== "unknown"
           ? imageAnalysis.growth_stage
@@ -61,8 +109,8 @@ export function synthesizeFieldFromImage(
       area_hectares: 1,
     },
     crop: {
-      type: imageAnalysis.crop_detected?.type ?? "unknown",
-      variety: "unknown",
+      type: resolveCropType(imageAnalysis),
+      variety: resolveVariety(imageAnalysis),
       planting_date: "unknown",
       growth_stage: imageAnalysis.growth_stage,
     },
@@ -84,6 +132,7 @@ export function synthesizeFieldFromImage(
     },
     observations: [
       `Image analysis summary: ${imageAnalysis.summary}`,
+      ...buildSpeciesObservations(imageAnalysis),
       `Estimated plant health from image: ${imageAnalysis.estimated_plant_health}`,
       `Irrigation signals from image: ${imageAnalysis.irrigation_signals}`,
       `Image limitations: ${imageAnalysis.limitations}`,

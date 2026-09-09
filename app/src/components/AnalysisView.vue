@@ -95,10 +95,107 @@ const imageAnalyst = computed(
 function formatCategory(category: string): string {
   return formatRiskType(category);
 }
+
+const VEGETATION_LABELS: Record<string, string> = {
+  tree: "Tree",
+  vine: "Vine",
+  shrub: "Shrub",
+  herbaceous: "Herbaceous crop",
+  mixed: "Mixed vegetation",
+  unknown: "Unknown",
+};
+
+function formatVegetationType(type: string): string {
+  return VEGETATION_LABELS[type] ?? formatRiskType(type);
+}
 </script>
 
 <template>
   <div class="results">
+    <article v-if="imageAnalyst" class="card image-agent image-agent-featured">
+      <div class="image-header">
+        <h2>Image Analyst</h2>
+        <div class="image-kpis">
+          <span class="image-kpi">
+            {{ formatVegetationType(imageAnalyst.vegetation_type) }}
+          </span>
+          <span class="image-kpi">{{ imageAnalyst.estimated_plant_health }}</span>
+          <span v-if="imageAnalyst.crop_detected" class="image-kpi">
+            {{ imageAnalyst.crop_detected.type }}
+            {{ formatPercent(imageAnalyst.crop_detected.confidence) }}
+          </span>
+          <span v-if="imageAnalyst.variety_guess" class="image-kpi">
+            {{ imageAnalyst.variety_guess }}
+          </span>
+        </div>
+      </div>
+
+      <p class="image-summary">{{ imageAnalyst.summary }}</p>
+
+      <div class="image-body">
+        <section class="image-panel">
+          <h3 class="image-panel-title">Identification</h3>
+          <dl class="image-facts">
+            <div>
+              <dt>Growth stage</dt>
+              <dd>{{ imageAnalyst.growth_stage }}</dd>
+            </div>
+            <div>
+              <dt>Crop</dt>
+              <dd>
+                <template v-if="imageAnalyst.crop_detected">
+                  {{ imageAnalyst.crop_detected.type }}
+                </template>
+                <template v-else>Not identifiable</template>
+              </dd>
+            </div>
+          </dl>
+          <ul
+            v-if="imageAnalyst.species_candidates.length"
+            class="species-chips"
+          >
+            <li
+              v-for="(candidate, i) in imageAnalyst.species_candidates"
+              :key="i"
+              class="species-chip"
+              :title="candidate.scientific_name ?? undefined"
+            >
+              <span class="species-name">{{ candidate.common_name }}</span>
+              <span class="species-conf">
+                {{ formatPercent(candidate.confidence) }}
+              </span>
+            </li>
+          </ul>
+          <p class="image-signal">{{ imageAnalyst.irrigation_signals }}</p>
+        </section>
+
+        <section
+          v-if="imageAnalyst.visual_observations.length"
+          class="image-panel"
+        >
+          <h3 class="image-panel-title">Visual observations</h3>
+          <ul class="image-observations-compact">
+            <li
+              v-for="(obs, i) in imageAnalyst.visual_observations"
+              :key="i"
+            >
+              <span class="obs-label">{{ formatCategory(obs.category) }}</span>
+              <span
+                v-if="obs.severity"
+                :class="['badge', severityClass(obs.severity)]"
+              >
+                {{ obs.severity }}
+              </span>
+              <span class="obs-sep" aria-hidden="true">·</span>
+              <span class="obs-text">{{ obs.observation }}</span>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <p class="limitations">{{ imageAnalyst.limitations }}</p>
+    </article>
+
     <section class="hero" :class="result.analysis.irrigation.should_irrigate_next_48h ? 'irrigate-yes' : 'irrigate-no'">
       <p class="eyebrow">Irrigate in the next 48h?</p>
       <p class="verdict">
@@ -149,41 +246,6 @@ function formatCategory(category: string): string {
     </section>
 
     <section class="agents">
-      <article v-if="imageAnalyst" class="card agent image-agent">
-        <h3>Image Analyst</h3>
-        <p class="image-summary">{{ imageAnalyst.summary }}</p>
-        <dl>
-          <div>
-            <dt>Crop detected</dt>
-            <dd>
-              <template v-if="imageAnalyst.crop_detected">
-                {{ imageAnalyst.crop_detected.type }}
-                ({{ formatPercent(imageAnalyst.crop_detected.confidence) }})
-              </template>
-              <template v-else>Not identifiable</template>
-            </dd>
-          </div>
-          <div><dt>Growth stage</dt><dd>{{ imageAnalyst.growth_stage }}</dd></div>
-          <div><dt>Plant health</dt><dd>{{ imageAnalyst.estimated_plant_health }}</dd></div>
-          <div><dt>Irrigation signals</dt><dd>{{ imageAnalyst.irrigation_signals }}</dd></div>
-        </dl>
-        <ul v-if="imageAnalyst.visual_observations.length" class="image-observations">
-          <li v-for="(obs, i) in imageAnalyst.visual_observations" :key="i">
-            <div class="obs-row">
-              <strong>{{ formatCategory(obs.category) }}</strong>
-              <span
-                v-if="obs.severity"
-                :class="['badge', severityClass(obs.severity)]"
-              >
-                {{ obs.severity }}
-              </span>
-            </div>
-            <p>{{ obs.observation }}</p>
-          </li>
-        </ul>
-        <p class="limitations">{{ imageAnalyst.limitations }}</p>
-      </article>
-
       <article class="card agent">
         <h3>Data Analyst</h3>
         <ul class="observations">
@@ -527,31 +589,169 @@ function formatCategory(category: string): string {
   background: linear-gradient(135deg, #fff 0%, #fffdf5 100%);
 }
 
-.image-summary {
-  margin: 0 0 0.85rem;
-  line-height: 1.55;
+.image-agent-featured {
+  width: 100%;
+  padding: 1rem 1.25rem;
 }
 
-.image-observations {
-  list-style: none;
-  margin: 0.85rem 0 0;
-  padding: 0;
+.image-header {
   display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
 }
 
-.image-observations li p {
-  margin: 0.3rem 0 0;
-  font-size: 0.88rem;
+.image-agent-featured h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--green);
+}
+
+.image-kpis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.image-kpi {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 70%);
+  border: 1px solid #ffc971;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: #7a5a00;
+}
+
+.image-summary {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.image-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.image-panel {
+  background: rgb(255 255 255 / 55%);
+  border: 1px solid rgb(255 201 113 / 45%);
+  border-radius: 8px;
+  padding: 0.75rem 0.85rem;
+}
+
+.image-panel-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--text-muted);
 }
 
-.limitations {
-  margin: 0.85rem 0 0;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border);
+.image-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem 0.75rem;
+  margin: 0 0 0.55rem;
   font-size: 0.82rem;
+}
+
+.image-facts dt {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--green);
+}
+
+.image-facts dd {
+  margin: 0.1rem 0 0;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.species-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.55rem;
+  padding: 0;
+  list-style: none;
+}
+
+.species-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+}
+
+.species-name {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.species-conf {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.image-signal {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.image-observations-compact {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.image-observations-compact li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.4rem;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.obs-label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.obs-sep {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.obs-text {
+  color: var(--text-muted);
+  flex: 1 1 12rem;
+}
+
+.limitations {
+  margin: 0.65rem 0 0;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgb(255 201 113 / 45%);
+  font-size: 0.78rem;
+  line-height: 1.45;
   color: var(--text-muted);
   font-style: italic;
 }
