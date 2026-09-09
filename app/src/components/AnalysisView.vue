@@ -171,6 +171,10 @@ const dataAnalystObservations = computed(() =>
           <div><dt>Development</dt><dd>{{ result.analysis.agents.agronomist.crop_development }}</dd></div>
           <div><dt>Health</dt><dd>{{ result.analysis.agents.agronomist.plant_health }}</dd></div>
         </dl>
+        <div class="reasoning-block">
+          <p class="reasoning-label">Reasoning</p>
+          <p class="reasoning-text">{{ result.analysis.agents.agronomist.reasoning }}</p>
+        </div>
       </article>
 
       <article class="card agent">
@@ -446,6 +450,28 @@ const dataAnalystObservations = computed(() =>
 .agent dd {
   margin: 0.15rem 0 0;
   color: var(--text-muted);
+}
+
+.reasoning-block {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+.reasoning-label {
+  margin: 0 0 0.4rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--green);
+}
+
+.reasoning-text {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text);
 }
 
 .compact li {
