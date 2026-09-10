@@ -50,8 +50,8 @@ export function formatAnalysis(result: PipelineResult): string {
   const { analysis, meta } = result;
 
   const lines = [
-    "AI Agronomic Copilot",
-    "====================",
+    "Field AI Analysis",
+    "=================",
     "",
     `Field: ${analysis.field_name} (${analysis.field_id})`,
     `Field health: ${analysis.field_health_score}/100`,

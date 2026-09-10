@@ -1,6 +1,6 @@
 # Field AI Analysis
 
-AI agronomic copilot that analyzes field data through a multi-agent pipeline and returns irrigation recommendations, risk assessments, and agronomic insights.
+Field AI Analysis analyzes field data through a multi-agent pipeline and returns irrigation recommendations, risk assessments, and agronomic insights.
 
 **Live demo:** [field-ai-analysis.vercel.app](https://field-ai-analysis.vercel.app)
 
