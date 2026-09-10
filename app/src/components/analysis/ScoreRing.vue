@@ -28,10 +28,15 @@ const dashOffset = computed(
   () => circumference - (circumference * pct.value) / 100,
 );
 
-const displayValue = computed(() => {
-  if (props.suffix === "%") return `${Math.round(props.value)}%`;
+const formattedValue = computed(() => {
   if (Number.isInteger(props.value)) return String(props.value);
   return props.value.toFixed(1);
+});
+
+const centerText = computed(() => {
+  if (props.suffix === "%") return `${Math.round(props.value)}%`;
+  if (props.suffix) return `${formattedValue.value}${props.suffix}`;
+  return formattedValue.value;
 });
 </script>
 
@@ -50,10 +55,7 @@ const displayValue = computed(() => {
         />
       </svg>
       <div class="score-ring-center">
-        <strong>{{ displayValue }}</strong>
-        <span v-if="suffix && suffix !== '%'" class="score-ring-suffix">{{
-          suffix
-        }}</span>
+        <span class="score-ring-value">{{ centerText }}</span>
       </div>
     </div>
     <span class="score-ring-label">{{ label }}</span>
@@ -109,21 +111,17 @@ const displayValue = computed(() => {
 .score-ring-center {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 0.1rem;
-  line-height: 1;
+  display: grid;
+  place-items: center;
+  padding: 0.75rem;
 }
 
-.score-ring-center strong {
-  font-size: 1.35rem;
+.score-ring-value {
+  font-size: 1.05rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-}
-
-.score-ring-suffix {
-  font-size: 0.75rem;
-  color: var(--text-muted);
+  line-height: 1.1;
+  text-align: center;
 }
 
 .score-ring-label {

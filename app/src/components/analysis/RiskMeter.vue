@@ -16,11 +16,15 @@ const SEVERITY_FILL: Record<Risk["severity"], number> = {
 <template>
   <li class="risk-meter" :class="`risk-meter--${risk.severity}`">
     <div class="risk-meter-head">
-      <strong>{{ label }}</strong>
-      <span class="badge" :class="`severity-${risk.severity}`">{{
-        risk.severity
-      }}</span>
-      <span class="risk-meter-conf">{{ Math.round(risk.confidence * 100) }}%</span>
+      <strong class="risk-meter-title">{{ label }}</strong>
+      <div class="risk-meter-meta">
+        <span class="badge" :class="`severity-${risk.severity}`">{{
+          risk.severity
+        }}</span>
+        <span class="risk-meter-conf">{{
+          Math.round(risk.confidence * 100)
+        }}%</span>
+      </div>
     </div>
     <div class="risk-meter-bars" aria-hidden="true">
       <div class="risk-meter-bar">
@@ -61,13 +65,24 @@ const SEVERITY_FILL: Record<Risk["severity"], number> = {
 .risk-meter-head {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
-.risk-meter-conf {
+.risk-meter-title {
+  min-width: 0;
+}
+
+.risk-meter-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
   margin-left: auto;
+}
+
+.risk-meter-conf {
   font-size: 0.78rem;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;

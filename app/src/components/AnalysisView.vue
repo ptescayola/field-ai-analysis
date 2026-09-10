@@ -227,7 +227,7 @@ function formatVegetationType(type: string): string {
         <p class="verdict">
           {{ result.analysis.irrigation.should_irrigate_next_48h ? "Yes" : "No" }}
         </p>
-        <p class="rationale">{{ result.analysis.irrigation.rationale }}</p>
+        <p class="rationale">{{ result.analysis.main_recommendation }}</p>
       </div>
 
       <div class="dashboard-scores">
@@ -248,37 +248,18 @@ function formatVegetationType(type: string): string {
 
     <FieldSnapshotCharts v-if="field" :field="field" />
 
-    <section class="card">
+    <section class="card summary-card">
       <h2>Summary</h2>
-      <p>{{ result.analysis.summary }}</p>
+      <p class="summary-text">{{ result.analysis.summary }}</p>
+      <details class="explanation-details">
+        <summary>Full explanation</summary>
+        <p>{{ result.analysis.explanation }}</p>
+      </details>
     </section>
 
-    <section class="card highlight">
-      <h2>Main recommendation</h2>
-      <p>{{ result.analysis.main_recommendation }}</p>
-    </section>
-
-    <section class="card">
-      <h2>Risks</h2>
-      <ul v-if="result.analysis.risks.length" class="risks risks-visual">
-        <RiskMeter
-          v-for="(risk, i) in result.analysis.risks"
-          :key="i"
-          :risk="risk"
-          :label="formatRiskType(risk.type)"
-        />
-      </ul>
-      <p v-else class="empty">None identified</p>
-    </section>
-
-    <details class="card details-card">
-      <summary>Full explanation</summary>
-      <p>{{ result.analysis.explanation }}</p>
-    </details>
-
-    <section class="agents">
-      <article class="card agent agent-wide">
-        <h3>Data Analyst</h3>
+    <section class="analysts-row">
+      <article class="card analyst-panel">
+        <h2>Data Analyst</h2>
         <div v-if="chartableObservations.length" class="metrics-chart">
           <MetricBar
             v-for="(obs, i) in chartableObservations"
@@ -306,6 +287,24 @@ function formatVegetationType(type: string): string {
         </ul>
       </article>
 
+      <article class="card analyst-panel">
+        <h2>Risk Analyst</h2>
+        <ul
+          v-if="result.analysis.agents.risk_analyst.risks.length"
+          class="risks risks-visual"
+        >
+          <RiskMeter
+            v-for="(risk, i) in result.analysis.agents.risk_analyst.risks"
+            :key="i"
+            :risk="risk"
+            :label="formatRiskType(risk.type)"
+          />
+        </ul>
+        <p v-else class="empty">None identified</p>
+      </article>
+    </section>
+
+    <section class="agents">
       <article class="card agent">
         <h3>Agronomist</h3>
         <dl>
@@ -320,15 +319,6 @@ function formatVegetationType(type: string): string {
             {{ result.analysis.agents.agronomist.reasoning }}
           </p>
         </details>
-      </article>
-
-      <article class="card agent">
-        <h3>Risk Analyst</h3>
-        <ul class="risks compact">
-          <li v-for="(risk, i) in result.analysis.agents.risk_analyst.risks" :key="i">
-            <strong>{{ formatRiskType(risk.type) }}</strong> — {{ risk.evidence }}
-          </li>
-        </ul>
       </article>
     </section>
   </div>
@@ -410,36 +400,67 @@ function formatVegetationType(type: string): string {
   gap: 0.85rem;
 }
 
-.agent-wide {
-  grid-column: 1 / -1;
+.analysts-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
 }
 
-.details-card summary {
+@media (max-width: 768px) {
+  .analysts-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.analyst-panel h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.summary-card h2 {
+  margin: 0 0 0.75rem;
+}
+
+.summary-text {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.explanation-details {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+.explanation-details summary {
   cursor: pointer;
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 400;
-  color: var(--text);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--green);
   list-style: none;
 }
 
-.details-card summary::-webkit-details-marker {
+.explanation-details summary::-webkit-details-marker {
   display: none;
 }
 
-.details-card summary::after {
+.explanation-details summary::after {
   content: " +";
   color: var(--text-muted);
-  font-family: var(--font);
-  font-size: 0.9rem;
+  font-weight: 400;
 }
 
-.details-card[open] summary::after {
+.explanation-details[open] summary::after {
   content: " −";
 }
 
-.details-card p {
-  margin-top: 0.75rem;
+.explanation-details p {
+  margin: 0.65rem 0 0;
+  line-height: 1.6;
+  color: var(--text-muted);
 }
 
 .risks-visual {
