@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useWeatherForecast } from "../composables/useWeatherForecast";
-import CropIcon from "./CropIcon.vue";
 import WeatherForecastView from "./WeatherForecastView.vue";
 import type { FieldData } from "../types";
 
@@ -28,10 +27,7 @@ function formatCropName(value: string): string {
     <div class="grid">
       <div class="stat">
         <span class="label">Crop</span>
-        <div class="crop-value">
-          <CropIcon :crop="field.crop.type" />
-          <strong>{{ formatCropName(field.crop.variety) }}</strong>
-        </div>
+        <strong class="crop-value">{{ formatCropName(field.crop.variety) }}</strong>
       </div>
       <div class="stat">
         <span class="label">Area</span>
@@ -65,8 +61,6 @@ function formatCropName(value: string): string {
         :forecast="forecast"
         :loading="loading"
         :error="error"
-        :latitude="latitude"
-        :longitude="longitude"
       />
     </div>
 
@@ -130,13 +124,6 @@ h3 {
 }
 
 .crop-value {
-  min-height: 2.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.crop-value strong {
   text-transform: capitalize;
 }
 
@@ -147,8 +134,12 @@ h3 {
 
 .forecast-section {
   margin-top: 1rem;
-  padding-top: 1rem;
+  padding-top: 0.85rem;
   border-top: 1px solid var(--border);
+}
+
+.forecast-section :deep(.forecast-strip) {
+  margin: 0 -0.25rem;
 }
 
 .source {

@@ -5,13 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "sync-meteocons": "node scripts/sync-meteocons-assets.mjs",
+    "predev": "npm run sync-meteocons",
     "build": "vite build",
+    "prebuild": "npm run sync-meteocons",
     "typecheck": "vue-tsc --noEmit",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@meteocons/svg-static": "^0.1.0",
     "vue": "^3.5.13",
-    "vue-router": "^4.6.4"
+    "vue-router": "^4.6.4",
+    "weather-i18n": "^1.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",

@@ -11,29 +11,15 @@ const props = defineProps<{
 
 const { forecast, loading, error } = useWeatherForecast(
   toRef(props, "latitude"),
-  toRef(props, "longitude")
+  toRef(props, "longitude"),
 );
 </script>
 
 <template>
-  <section class="panel">
-    <WeatherForecastView
-      :forecast="forecast"
-      :loading="loading"
-      :error="error"
-      :latitude="latitude"
-      :longitude="longitude"
-      :title="title"
-    />
-  </section>
+  <WeatherForecastView
+    :forecast="forecast"
+    :loading="loading"
+    :error="error"
+    :title="title"
+  />
 </template>
-
-<style scoped>
-.panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem 1.5rem;
-  box-shadow: var(--shadow);
-}
-</style>
