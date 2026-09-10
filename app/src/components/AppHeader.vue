@@ -31,7 +31,7 @@ const navItems = [
               width="24"
               height="24"
             />
-            AI Agronomic Copilot
+            Field AI Analysis
           </RouterLink>
         </h1>
         <p class="meta">
