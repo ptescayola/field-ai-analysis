@@ -1,9 +1,18 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { PipelineResult, Risk } from "../types";
+import FieldSnapshotCharts from "./analysis/FieldSnapshotCharts.vue";
+import MetricBar from "./analysis/MetricBar.vue";
+import RiskMeter from "./analysis/RiskMeter.vue";
+import ScoreRing from "./analysis/ScoreRing.vue";
+import {
+  healthScoreTone,
+  parseObservationMetric,
+} from "../utils/metric-visualization";
+import type { FieldData, PipelineResult, Risk } from "../types";
 
 const props = defineProps<{
   result: PipelineResult;
+  field?: FieldData | null;
 }>();
 
 function formatRiskType(type: string): string {
@@ -85,7 +94,16 @@ const dataAnalystObservations = computed(() =>
     ...obs,
     metricLabel: formatMetric(obs.metric),
     assessmentCopy: getAssessmentCopy(obs.assessment),
+    chart: parseObservationMetric(obs.metric, obs.value, obs.assessment),
   }))
+);
+
+const chartableObservations = computed(() =>
+  dataAnalystObservations.value.filter((obs) => obs.chart !== null),
+);
+
+const healthTone = computed(() =>
+  healthScoreTone(props.result.analysis.field_health_score),
 );
 
 const imageAnalyst = computed(
@@ -196,24 +214,39 @@ function formatVegetationType(type: string): string {
       <p class="limitations">{{ imageAnalyst.limitations }}</p>
     </article>
 
-    <section class="hero" :class="result.analysis.irrigation.should_irrigate_next_48h ? 'irrigate-yes' : 'irrigate-no'">
-      <p class="eyebrow">Irrigate in the next 48h?</p>
-      <p class="verdict">
-        {{ result.analysis.irrigation.should_irrigate_next_48h ? "Yes" : "No" }}
-      </p>
-      <p class="rationale">{{ result.analysis.irrigation.rationale }}</p>
+    <section class="dashboard">
+      <div
+        class="hero"
+        :class="
+          result.analysis.irrigation.should_irrigate_next_48h
+            ? 'irrigate-yes'
+            : 'irrigate-no'
+        "
+      >
+        <p class="eyebrow">Irrigate in the next 48h?</p>
+        <p class="verdict">
+          {{ result.analysis.irrigation.should_irrigate_next_48h ? "Yes" : "No" }}
+        </p>
+        <p class="rationale">{{ result.analysis.irrigation.rationale }}</p>
+      </div>
+
+      <div class="dashboard-scores">
+        <ScoreRing
+          label="Field health"
+          :value="result.analysis.field_health_score"
+          suffix="/100"
+          :tone="healthTone"
+        />
+        <ScoreRing
+          label="Confidence"
+          :value="result.analysis.confidence * 100"
+          suffix="%"
+          tone="neutral"
+        />
+      </div>
     </section>
 
-    <div class="scores">
-      <div class="score-card">
-        <span class="label">Field health</span>
-        <strong>{{ result.analysis.field_health_score }}/100</strong>
-      </div>
-      <div class="score-card">
-        <span class="label">Confidence</span>
-        <strong>{{ formatPercent(result.analysis.confidence) }}</strong>
-      </div>
-    </div>
+    <FieldSnapshotCharts v-if="field" :field="field" />
 
     <section class="card">
       <h2>Summary</h2>
@@ -227,28 +260,34 @@ function formatVegetationType(type: string): string {
 
     <section class="card">
       <h2>Risks</h2>
-      <ul v-if="result.analysis.risks.length" class="risks">
-        <li v-for="(risk, i) in result.analysis.risks" :key="i">
-          <div class="risk-head">
-            <strong>{{ formatRiskType(risk.type) }}</strong>
-            <span :class="['badge', severityClass(risk.severity)]">{{ risk.severity }}</span>
-            <span class="conf">{{ formatPercent(risk.confidence) }}</span>
-          </div>
-          <p>{{ risk.evidence }}</p>
-        </li>
+      <ul v-if="result.analysis.risks.length" class="risks risks-visual">
+        <RiskMeter
+          v-for="(risk, i) in result.analysis.risks"
+          :key="i"
+          :risk="risk"
+          :label="formatRiskType(risk.type)"
+        />
       </ul>
       <p v-else class="empty">None identified</p>
     </section>
 
-    <section class="card">
-      <h2>Explanation</h2>
+    <details class="card details-card">
+      <summary>Full explanation</summary>
       <p>{{ result.analysis.explanation }}</p>
-    </section>
+    </details>
 
     <section class="agents">
-      <article class="card agent">
+      <article class="card agent agent-wide">
         <h3>Data Analyst</h3>
-        <ul class="observations">
+        <div v-if="chartableObservations.length" class="metrics-chart">
+          <MetricBar
+            v-for="(obs, i) in chartableObservations"
+            :key="i"
+            :metric="obs.chart!"
+            :assessment-label="obs.assessmentCopy.label"
+          />
+        </div>
+        <ul v-else class="observations">
           <li v-for="(obs, i) in dataAnalystObservations" :key="i">
             <div class="obs-row">
               <span class="obs-metric">{{ obs.metricLabel }}</span>
@@ -262,7 +301,6 @@ function formatVegetationType(type: string): string {
               >
                 {{ obs.assessmentCopy.label }}
               </span>
-              <span class="assessment-hint">{{ obs.assessmentCopy.hint }}</span>
             </div>
           </li>
         </ul>
@@ -276,10 +314,12 @@ function formatVegetationType(type: string): string {
           <div><dt>Development</dt><dd>{{ result.analysis.agents.agronomist.crop_development }}</dd></div>
           <div><dt>Health</dt><dd>{{ result.analysis.agents.agronomist.plant_health }}</dd></div>
         </dl>
-        <div class="reasoning-block">
-          <p class="reasoning-label">Reasoning</p>
-          <p class="reasoning-text">{{ result.analysis.agents.agronomist.reasoning }}</p>
-        </div>
+        <details class="reasoning-block">
+          <summary>Reasoning</summary>
+          <p class="reasoning-text">
+            {{ result.analysis.agents.agronomist.reasoning }}
+          </p>
+        </details>
       </article>
 
       <article class="card agent">
@@ -299,6 +339,34 @@ function formatVegetationType(type: string): string {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+@media (max-width: 640px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-scores {
+    justify-content: center;
+  }
+}
+
+.dashboard-scores {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  box-shadow: var(--shadow);
 }
 
 .hero {
@@ -337,27 +405,45 @@ function formatVegetationType(type: string): string {
   line-height: 1.5;
 }
 
-.scores {
+.metrics-chart {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
-.score-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+.agent-wide {
+  grid-column: 1 / -1;
 }
 
-.score-card .label {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.details-card summary {
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--text);
+  list-style: none;
+}
+
+.details-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.details-card summary::after {
+  content: " +";
   color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.9rem;
+}
+
+.details-card[open] summary::after {
+  content: " −";
+}
+
+.details-card p {
+  margin-top: 0.75rem;
+}
+
+.risks-visual {
+  gap: 0;
 }
 
 .card {
@@ -563,13 +649,18 @@ function formatVegetationType(type: string): string {
   border-top: 1px solid var(--border);
 }
 
-.reasoning-label {
-  margin: 0 0 0.4rem;
+.reasoning-block summary {
+  cursor: pointer;
   font-weight: 600;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--green);
+  list-style: none;
+}
+
+.reasoning-block summary::-webkit-details-marker {
+  display: none;
 }
 
 .reasoning-text {

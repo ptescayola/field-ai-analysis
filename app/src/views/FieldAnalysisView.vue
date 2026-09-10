@@ -83,7 +83,11 @@ async function runAnalysis(): Promise<void> {
         hint="This may take 10–20 seconds"
       />
 
-      <AnalysisView v-else-if="result" :result="result" />
+      <AnalysisView
+        v-else-if="result"
+        :result="result"
+        :field="fieldData"
+      />
 
       <EmptyState v-if="loadingField" message="Loading field data…" />
       <FieldPanel v-else-if="fieldData" :field="fieldData" />
