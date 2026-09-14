@@ -1,0 +1,9 @@
+node_modules/
+app/node_modules/
+dist/
+app/dist/
+backend-dist/
+.vercel/
+per-5-change-title/
+package-lock.json
+app/package-lock.json

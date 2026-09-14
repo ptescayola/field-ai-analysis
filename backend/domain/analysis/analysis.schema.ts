@@ -1,24 +1,24 @@
-import { z } from "zod";
-import { imageAnalystOutputSchema } from "./image-analyst.schema.js";
+import { z } from "zod"
+import { imageAnalystOutputSchema } from "./image-analyst.schema.js"
 
-export const severitySchema = z.enum(["low", "medium", "high"]);
+export const severitySchema = z.enum(["low", "medium", "high"])
 
 export const riskSchema = z.object({
   type: z.string(),
   severity: severitySchema,
   evidence: z.string(),
   confidence: z.number().min(0).max(1),
-});
+})
 
 export const observationSchema = z.object({
   metric: z.string(),
   value: z.string(),
   assessment: z.string(),
-});
+})
 
 export const dataAnalystOutputSchema = z.object({
   observations: z.array(observationSchema),
-});
+})
 
 export const agronomistOutputSchema = z.object({
   irrigation_assessment: z.string(),
@@ -26,11 +26,11 @@ export const agronomistOutputSchema = z.object({
   crop_development: z.string(),
   plant_health: z.string(),
   reasoning: z.string(),
-});
+})
 
 export const riskAnalystOutputSchema = z.object({
   risks: z.array(riskSchema),
-});
+})
 
 export const analysisOutputSchema = z.object({
   field_id: z.string(),
@@ -51,19 +51,19 @@ export const analysisOutputSchema = z.object({
     risk_analyst: riskAnalystOutputSchema,
     image_analyst: imageAnalystOutputSchema.optional(),
   }),
-});
+})
 
 export const coordinatorOutputSchema = analysisOutputSchema.omit({
   field_id: true,
   field_name: true,
   agents: true,
-});
+})
 
-export type Severity = z.infer<typeof severitySchema>;
-export type Risk = z.infer<typeof riskSchema>;
-export type Observation = z.infer<typeof observationSchema>;
-export type DataAnalystOutput = z.infer<typeof dataAnalystOutputSchema>;
-export type AgronomistOutput = z.infer<typeof agronomistOutputSchema>;
-export type RiskAnalystOutput = z.infer<typeof riskAnalystOutputSchema>;
-export type AnalysisOutput = z.infer<typeof analysisOutputSchema>;
-export type CoordinatorOutput = z.infer<typeof coordinatorOutputSchema>;
+export type Severity = z.infer<typeof severitySchema>
+export type Risk = z.infer<typeof riskSchema>
+export type Observation = z.infer<typeof observationSchema>
+export type DataAnalystOutput = z.infer<typeof dataAnalystOutputSchema>
+export type AgronomistOutput = z.infer<typeof agronomistOutputSchema>
+export type RiskAnalystOutput = z.infer<typeof riskAnalystOutputSchema>
+export type AnalysisOutput = z.infer<typeof analysisOutputSchema>
+export type CoordinatorOutput = z.infer<typeof coordinatorOutputSchema>

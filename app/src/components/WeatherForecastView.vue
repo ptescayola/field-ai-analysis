@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import WeatherIcon from "./WeatherIcon.vue";
-import { getWeatherDescription } from "../utils/wmo-weather";
-import type { WeatherForecast } from "../types";
+import WeatherIcon from "./WeatherIcon.vue"
+import { getWeatherDescription } from "../utils/wmo-weather"
+import type { WeatherForecast } from "../types"
 
 defineProps<{
-  forecast: WeatherForecast | null;
-  loading: boolean;
-  error: string | null;
-  title?: string;
-}>();
+  forecast: WeatherForecast | null
+  loading: boolean
+  error: string | null
+  title?: string
+}>()
 
 function formatDate(date: string): string {
   return new Intl.DateTimeFormat("en-GB", {
     weekday: "short",
     day: "numeric",
     month: "short",
-  }).format(new Date(`${date}T12:00:00`));
+  }).format(new Date(`${date}T12:00:00`))
 }
 
 function formatRain(mm: number): string {
-  if (mm === 0) return "0 mm";
-  if (mm < 1) return `${mm.toFixed(1)} mm`;
-  return `${Math.round(mm)} mm`;
+  if (mm === 0) return "0 mm"
+  if (mm < 1) return `${mm.toFixed(1)} mm`
+  return `${Math.round(mm)} mm`
 }
 </script>
 

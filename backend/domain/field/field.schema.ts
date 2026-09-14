@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod"
 
 export const fieldSchema = z.object({
   field: z.object({
@@ -9,6 +9,12 @@ export const fieldSchema = z.object({
       lng: z.number(),
     }),
     area_hectares: z.number().positive(),
+    boundary: z
+      .object({
+        type: z.literal("Polygon"),
+        coordinates: z.array(z.array(z.tuple([z.number(), z.number()]))).min(1),
+      })
+      .optional(),
   }),
   crop: z.object({
     type: z.string(),
@@ -31,7 +37,7 @@ export const fieldSchema = z.object({
         day: z.string(),
         rain_mm: z.number().min(0),
         max_temperature_c: z.number(),
-      })
+      }),
     ),
   }),
   vegetation: z.object({
@@ -39,6 +45,6 @@ export const fieldSchema = z.object({
     ndvi_previous_week: z.number().min(-1).max(1),
   }),
   observations: z.array(z.string()),
-});
+})
 
-export type FieldData = z.infer<typeof fieldSchema>;
+export type FieldData = z.infer<typeof fieldSchema>

@@ -1,11 +1,11 @@
-import assert from "node:assert/strict";
-import { it } from "node:test";
-import type { ImageAnalystOutput } from "../backend/domain/analysis/image-analyst.schema.js";
-import { fieldSchema } from "../backend/domain/field/field.schema.js";
+import assert from "node:assert/strict"
+import { it } from "node:test"
+import type { ImageAnalystOutput } from "../backend/domain/analysis/image-analyst.schema.js"
+import { fieldSchema } from "../backend/domain/field/field.schema.js"
 import {
   mergeImageIntoField,
   synthesizeFieldFromImage,
-} from "../backend/application/services/merge-image-field.service.js";
+} from "../backend/application/services/merge-image-field.service.js"
 
 const imageAnalysis: ImageAnalystOutput = {
   summary: "Vines show moderate vigor with some leaf yellowing.",
@@ -30,7 +30,7 @@ const imageAnalysis: ImageAnalystOutput = {
   estimated_plant_health: "good",
   irrigation_signals: "No severe wilting observed",
   limitations: "Soil moisture cannot be measured from the image",
-};
+}
 
 const field = fieldSchema.parse({
   field: {
@@ -59,31 +59,31 @@ const field = fieldSchema.parse({
   },
   vegetation: { ndvi: 0.79, ndvi_previous_week: 0.8 },
   observations: ["Existing farmer note"],
-});
+})
 
 it("mergeImageIntoField appends image observations and updates growth stage", () => {
-  const merged = mergeImageIntoField(field, imageAnalysis);
+  const merged = mergeImageIntoField(field, imageAnalysis)
 
-  assert.equal(merged.crop.type, "grape");
-  assert.equal(merged.crop.variety, "Albariño");
-  assert.equal(merged.crop.growth_stage, "veraison");
-  assert.ok(merged.observations.some((item) => item.includes("Species candidates")));
-  assert.match(merged.observations[0], /Image analysis summary/);
+  assert.equal(merged.crop.type, "grape")
+  assert.equal(merged.crop.variety, "Albariño")
+  assert.equal(merged.crop.growth_stage, "veraison")
   assert.ok(
-    merged.observations.some((item) => item.includes("water stress"))
-  );
-  assert.ok(merged.observations.includes("Existing farmer note"));
-});
+    merged.observations.some((item) => item.includes("Species candidates")),
+  )
+  assert.match(merged.observations[0], /Image analysis summary/)
+  assert.ok(merged.observations.some((item) => item.includes("water stress")))
+  assert.ok(merged.observations.includes("Existing farmer note"))
+})
 
 it("synthesizeFieldFromImage creates a minimal field snapshot", () => {
   const synthesized = synthesizeFieldFromImage(imageAnalysis, {
     latitude: 39.060664,
     longitude: 1.397765,
-  });
+  })
 
-  assert.equal(synthesized.field.id, "IMAGE-FIELD");
-  assert.equal(synthesized.field.location.lat, 39.060664);
-  assert.equal(synthesized.field.location.lng, 1.397765);
-  assert.equal(synthesized.crop.type, "grape");
-  assert.ok(synthesized.observations.length >= 3);
-});
+  assert.equal(synthesized.field.id, "IMAGE-FIELD")
+  assert.equal(synthesized.field.location.lat, 39.060664)
+  assert.equal(synthesized.field.location.lng, 1.397765)
+  assert.equal(synthesized.crop.type, "grape")
+  assert.ok(synthesized.observations.length >= 3)
+})

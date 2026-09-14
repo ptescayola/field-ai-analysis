@@ -1,31 +1,32 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { analyzeFieldImage } from "../api/client";
-import AnalysisLoadingState from "../components/AnalysisLoadingState.vue";
-import AnalysisView from "../components/AnalysisView.vue";
-import ErrorAlert from "../components/ErrorAlert.vue";
-import ImageUploadPanel from "../components/ImageUploadPanel.vue";
-import AppLayout from "../layouts/AppLayout.vue";
-import type { PipelineResult, SelectedImage } from "../types";
+import { ref } from "vue"
+import { analyzeFieldImage } from "../api/client"
+import AnalysisLoadingState from "../components/AnalysisLoadingState.vue"
+import AnalysisView from "../components/AnalysisView.vue"
+import ErrorAlert from "../components/ErrorAlert.vue"
+import ImageUploadPanel from "../components/ImageUploadPanel.vue"
+import AppLayout from "../layouts/AppLayout.vue"
+import type { PipelineResult, SelectedImage } from "../types"
 
-const result = ref<PipelineResult | null>(null);
-const analyzing = ref(false);
-const analysisError = ref<string | null>(null);
+const result = ref<PipelineResult | null>(null)
+const analyzing = ref(false)
+const analysisError = ref<string | null>(null)
 
 async function runImageAnalysis(image: SelectedImage): Promise<void> {
-  analyzing.value = true;
-  analysisError.value = null;
-  result.value = null;
+  analyzing.value = true
+  analysisError.value = null
+  result.value = null
   try {
     result.value = await analyzeFieldImage(
       image.base64,
       image.mimeType,
-      image.fileName
-    );
+      image.fileName,
+    )
   } catch (e) {
-    analysisError.value = e instanceof Error ? e.message : "Image analysis failed";
+    analysisError.value =
+      e instanceof Error ? e.message : "Image analysis failed"
   } finally {
-    analyzing.value = false;
+    analyzing.value = false
   }
 }
 </script>

@@ -1,43 +1,43 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import type { MetricTone } from "../../utils/metric-visualization";
+import { computed } from "vue"
+import type { MetricTone } from "../../utils/metric-visualization"
 
 const props = withDefaults(
   defineProps<{
-    label: string;
-    value: number;
-    max?: number;
-    suffix?: string;
-    tone?: MetricTone;
+    label: string
+    value: number
+    max?: number
+    suffix?: string
+    tone?: MetricTone
   }>(),
   {
     max: 100,
     suffix: "",
     tone: "neutral",
   },
-);
+)
 
-const radius = 38;
-const circumference = 2 * Math.PI * radius;
+const radius = 38
+const circumference = 2 * Math.PI * radius
 
 const pct = computed(() =>
   Math.min(100, Math.max(0, (props.value / props.max) * 100)),
-);
+)
 
 const dashOffset = computed(
   () => circumference - (circumference * pct.value) / 100,
-);
+)
 
 const formattedValue = computed(() => {
-  if (Number.isInteger(props.value)) return String(props.value);
-  return props.value.toFixed(1);
-});
+  if (Number.isInteger(props.value)) return String(props.value)
+  return props.value.toFixed(1)
+})
 
 const centerText = computed(() => {
-  if (props.suffix === "%") return `${Math.round(props.value)}%`;
-  if (props.suffix) return `${formattedValue.value}${props.suffix}`;
-  return formattedValue.value;
-});
+  if (props.suffix === "%") return `${Math.round(props.value)}%`
+  if (props.suffix) return `${formattedValue.value}${props.suffix}`
+  return formattedValue.value
+})
 </script>
 
 <template>

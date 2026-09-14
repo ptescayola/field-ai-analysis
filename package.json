@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc",
     "build:app": "npm run build --prefix app",
-    "check": "npm run test && npm run build && npm run typecheck --prefix app",
+    "check": "npm run format:check && npm run test && npm run build && npm run typecheck --prefix app",
+    "format": "prettier --write \"**/*.{ts,vue,mjs}\"",
+    "format:check": "prettier --check \"**/*.{ts,vue,mjs}\"",
     "test": "tsx --test tests/*.test.ts",
     "vercel-build": "node scripts/vercel-build.mjs",
     "start": "node backend-dist/presentation/http/server.js",
@@ -16,7 +18,13 @@
     "app": "npm run dev --prefix app",
     "dev": "concurrently -n api,app -c green,blue \"npm run api\" \"npm run app\""
   },
-  "keywords": ["agriculture", "ai", "openai", "vue", "typescript"],
+  "keywords": [
+    "agriculture",
+    "ai",
+    "openai",
+    "vue",
+    "typescript"
+  ],
   "author": "Pere Torres Escayola",
   "license": "ISC",
   "engines": {
@@ -34,6 +42,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.4.1",
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "prettier": "^3.9.6"
   }
 }

@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import type { Risk } from "../../types";
+import type { Risk } from "../../types"
 
 defineProps<{
-  risk: Risk;
-  label: string;
-}>();
+  risk: Risk
+  label: string
+}>()
 
 const SEVERITY_FILL: Record<Risk["severity"], number> = {
   low: 33,
   medium: 66,
   high: 100,
-};
+}
 </script>
 
 <template>
@@ -21,9 +21,9 @@ const SEVERITY_FILL: Record<Risk["severity"], number> = {
         <span class="badge" :class="`severity-${risk.severity}`">{{
           risk.severity
         }}</span>
-        <span class="risk-meter-conf">{{
-          Math.round(risk.confidence * 100)
-        }}%</span>
+        <span class="risk-meter-conf"
+          >{{ Math.round(risk.confidence * 100) }}%</span
+        >
       </div>
     </div>
     <div class="risk-meter-bars" aria-hidden="true">

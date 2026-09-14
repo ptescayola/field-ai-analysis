@@ -4,15 +4,18 @@ import {
   coordinatorOutputSchema,
   dataAnalystOutputSchema,
   riskAnalystOutputSchema,
-} from "../../domain/analysis/analysis.schema.js";
-import type { ImageAnalystOutput } from "../../domain/analysis/image-analyst.schema.js";
-import type { FieldData } from "../../domain/field/field.schema.js";
-import type { AgentPort } from "../../domain/ports/agent.port.js";
-import type { PipelineMeta, PipelineResult } from "../../domain/pipeline/pipeline.schema.js";
-import { buildPipelineMetrics } from "./analysis-metrics.service.js";
+} from "../../domain/analysis/analysis.schema.js"
+import type { ImageAnalystOutput } from "../../domain/analysis/image-analyst.schema.js"
+import type { FieldData } from "../../domain/field/field.schema.js"
+import type { AgentPort } from "../../domain/ports/agent.port.js"
+import type {
+  PipelineMeta,
+  PipelineResult,
+} from "../../domain/pipeline/pipeline.schema.js"
+import { buildPipelineMetrics } from "./analysis-metrics.service.js"
 
 const IRRIGATION_QUESTION =
-  "Should I irrigate this field during the next 48 hours?";
+  "Should I irrigate this field during the next 48 hours?"
 
 export class FieldAnalysisOrchestrator {
   constructor(private readonly agentPort: AgentPort) {}
@@ -20,11 +23,11 @@ export class FieldAnalysisOrchestrator {
   async run(
     field: FieldData,
     promptVersions: Record<string, string>,
-    imageAnalysis?: ImageAnalystOutput
+    imageAnalysis?: ImageAnalystOutput,
   ): Promise<PipelineResult> {
-    const pipelineStartedAt = performance.now();
+    const pipelineStartedAt = performance.now()
 
-    console.error("  → Data Analyst + Risk Analyst (parallel)");
+    console.error("  → Data Analyst + Risk Analyst (parallel)")
     const [dataAnalystRun, riskAnalystRun] = await Promise.all([
       this.agentPort.run({
         agentName: "data-analyst",
@@ -38,9 +41,9 @@ export class FieldAnalysisOrchestrator {
         outputSchema: riskAnalystOutputSchema,
         responseName: "risk_analyst_output",
       }),
-    ]);
+    ])
 
-    console.error("  → Agronomist");
+    console.error("  → Agronomist")
     const agronomistRun = await this.agentPort.run({
       agentName: "agronomist",
       input: {
@@ -49,9 +52,9 @@ export class FieldAnalysisOrchestrator {
       },
       outputSchema: agronomistOutputSchema,
       responseName: "agronomist_output",
-    });
+    })
 
-    console.error("  → Coordinator");
+    console.error("  → Coordinator")
     const coordinatorRun = await this.agentPort.run({
       agentName: "coordinator",
       input: {
@@ -63,14 +66,14 @@ export class FieldAnalysisOrchestrator {
       },
       outputSchema: coordinatorOutputSchema,
       responseName: "coordinator_output",
-    });
+    })
 
     const traces = [
       dataAnalystRun.trace,
       riskAnalystRun.trace,
       agronomistRun.trace,
       coordinatorRun.trace,
-    ];
+    ]
 
     const analysis = analysisOutputSchema.parse({
       field_id: field.field.id,
@@ -82,16 +85,16 @@ export class FieldAnalysisOrchestrator {
         risk_analyst: riskAnalystRun.output,
         ...(imageAnalysis ? { image_analyst: imageAnalysis } : {}),
       },
-    });
+    })
 
-    const totalDurationMs = Math.round(performance.now() - pipelineStartedAt);
+    const totalDurationMs = Math.round(performance.now() - pipelineStartedAt)
 
     const meta: PipelineMeta = {
       prompt_versions: promptVersions,
       trace: traces,
       metrics: buildPipelineMetrics(traces, totalDurationMs),
-    };
+    }
 
-    return { analysis, meta };
+    return { analysis, meta }
   }
 }

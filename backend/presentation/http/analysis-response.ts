@@ -1,11 +1,11 @@
 import type {
   PipelineMeta,
   PipelineResult,
-} from "../../domain/pipeline/pipeline.schema.js";
+} from "../../domain/pipeline/pipeline.schema.js"
 
 export interface AnalysisResponse {
-  analysis: PipelineResult["analysis"];
-  meta: Pick<PipelineMeta, "metrics" | "prompt_versions">;
+  analysis: PipelineResult["analysis"]
+  meta: Pick<PipelineMeta, "metrics" | "prompt_versions">
 }
 
 /**
@@ -19,5 +19,5 @@ export function toAnalysisResponse(result: PipelineResult): AnalysisResponse {
       metrics: result.meta.metrics,
       prompt_versions: result.meta.prompt_versions,
     },
-  };
+  }
 }

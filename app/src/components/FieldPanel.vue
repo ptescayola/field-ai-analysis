@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useWeatherForecast } from "../composables/useWeatherForecast";
-import WeatherForecastView from "./WeatherForecastView.vue";
-import type { FieldData } from "../types";
+import { computed } from "vue"
+import { useWeatherForecast } from "../composables/useWeatherForecast"
+import WeatherForecastView from "./WeatherForecastView.vue"
+import type { FieldData } from "../types"
 
 const props = defineProps<{
-  field: FieldData;
-}>();
+  field: FieldData
+}>()
 
-const latitude = computed(() => props.field.field.location.lat);
-const longitude = computed(() => props.field.field.location.lng);
+const latitude = computed(() => props.field.field.location.lat)
+const longitude = computed(() => props.field.field.location.lng)
 
 const { forecast, loading, error, rainNext7Days } = useWeatherForecast(
   latitude,
-  longitude
-);
+  longitude,
+)
 
 function formatCropName(value: string): string {
-  return value.replaceAll("_", " ");
+  return value.replaceAll("_", " ")
 }
 </script>
 
@@ -27,7 +27,9 @@ function formatCropName(value: string): string {
     <div class="grid">
       <div class="stat">
         <span class="label">Crop</span>
-        <strong class="crop-value">{{ formatCropName(field.crop.variety) }}</strong>
+        <strong class="crop-value">{{
+          formatCropName(field.crop.variety)
+        }}</strong>
       </div>
       <div class="stat">
         <span class="label">Area</span>
@@ -70,7 +72,11 @@ function formatCropName(value: string): string {
         <span class="source">Field observations from the grower</span>
       </div>
       <ul class="farmer-notes-list">
-        <li v-for="(note, i) in field.observations" :key="i" class="farmer-note">
+        <li
+          v-for="(note, i) in field.observations"
+          :key="i"
+          class="farmer-note"
+        >
           {{ note }}
         </li>
       </ul>

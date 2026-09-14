@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { RouterLink, useRoute } from "vue-router";
+import { RouterLink, useRoute } from "vue-router"
 
 defineProps<{
-  eyebrow?: string;
-  experimental?: boolean;
-}>();
+  eyebrow?: string
+  experimental?: boolean
+}>()
 
-const route = useRoute();
+const route = useRoute()
 
 const navItems = [
   { to: "/", label: "Field analysis" },
   { to: "/image", label: "Image analysis", experimental: true },
-] as const;
+] as const
 </script>
 
 <template>
@@ -20,7 +20,9 @@ const navItems = [
       <div class="title">
         <p class="eyebrow">
           {{ eyebrow ?? "Field analysis with specialized agents" }}
-          <span v-if="experimental" class="experimental-badge">Experimental</span>
+          <span v-if="experimental" class="experimental-badge"
+            >Experimental</span
+          >
         </p>
         <h1>
           <RouterLink to="/" class="title-link">
@@ -162,7 +164,10 @@ const navItems = [
   font-size: 0.88rem;
   font-weight: 600;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .nav-link:hover {

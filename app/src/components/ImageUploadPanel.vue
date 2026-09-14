@@ -1,80 +1,80 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from "vue";
-import type { SelectedImage } from "../types";
-import { parseCoordinatesFromFilename } from "../utils/coordinates-from-filename";
-import WeatherForecastPanel from "./WeatherForecastPanel.vue";
+import { onBeforeUnmount, ref } from "vue"
+import type { SelectedImage } from "../types"
+import { parseCoordinatesFromFilename } from "../utils/coordinates-from-filename"
+import WeatherForecastPanel from "./WeatherForecastPanel.vue"
 
-const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"] as const
 
 const props = defineProps<{
-  analyzing: boolean;
-}>();
+  analyzing: boolean
+}>()
 
 const emit = defineEmits<{
-  analyze: [payload: SelectedImage];
-  clear: [];
-  clearError: [];
-  error: [message: string];
-}>();
+  analyze: [payload: SelectedImage]
+  clear: []
+  clearError: []
+  error: [message: string]
+}>()
 
-const selectedImage = ref<SelectedImage | null>(null);
-const isDragging = ref(false);
-const fileInput = ref<HTMLInputElement | null>(null);
+const selectedImage = ref<SelectedImage | null>(null)
+const isDragging = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 function revokePreview(url: string | null): void {
-  if (url) URL.revokeObjectURL(url);
+  if (url) URL.revokeObjectURL(url)
 }
 
 function clearImage(): void {
   if (selectedImage.value) {
-    revokePreview(selectedImage.value.previewUrl);
+    revokePreview(selectedImage.value.previewUrl)
   }
-  selectedImage.value = null;
-  if (fileInput.value) fileInput.value.value = "";
-  emit("clear");
+  selectedImage.value = null
+  if (fileInput.value) fileInput.value.value = ""
+  emit("clear")
 }
 
 async function readFile(file: File): Promise<void> {
   if (!ALLOWED_TYPES.includes(file.type as (typeof ALLOWED_TYPES)[number])) {
-    emit("error", "Use a JPEG, PNG, or WebP image");
-    return;
+    emit("error", "Use a JPEG, PNG, or WebP image")
+    return
   }
 
   if (file.size > MAX_IMAGE_BYTES) {
-    emit("error", "Image must be 4 MB or smaller");
-    return;
+    emit("error", "Image must be 4 MB or smaller")
+    return
   }
 
-  const coordinates = parseCoordinatesFromFilename(file.name);
+  const coordinates = parseCoordinatesFromFilename(file.name)
   if (!coordinates) {
     emit(
       "error",
-      "Filename must include coordinates: lat,lng.ext (e.g. 39.060664,1.397765.png)"
-    );
-    return;
+      "Filename must include coordinates: lat,lng.ext (e.g. 39.060664,1.397765.png)",
+    )
+    return
   }
 
   if (selectedImage.value) {
-    revokePreview(selectedImage.value.previewUrl);
+    revokePreview(selectedImage.value.previewUrl)
   }
 
-  const previewUrl = URL.createObjectURL(file);
+  const previewUrl = URL.createObjectURL(file)
 
   const base64 = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
+    const reader = new FileReader()
     reader.onload = () => {
-      const result = reader.result;
+      const result = reader.result
       if (typeof result !== "string") {
-        reject(new Error("Could not read image"));
-        return;
+        reject(new Error("Could not read image"))
+        return
       }
-      const commaIndex = result.indexOf(",");
-      resolve(commaIndex >= 0 ? result.slice(commaIndex + 1) : result);
-    };
-    reader.onerror = () => reject(new Error("Could not read image"));
-    reader.readAsDataURL(file);
-  });
+      const commaIndex = result.indexOf(",")
+      resolve(commaIndex >= 0 ? result.slice(commaIndex + 1) : result)
+    }
+    reader.onerror = () => reject(new Error("Could not read image"))
+    reader.readAsDataURL(file)
+  })
 
   selectedImage.value = {
     base64,
@@ -82,43 +82,49 @@ async function readFile(file: File): Promise<void> {
     previewUrl,
     fileName: file.name,
     coordinates,
-  };
-  emit("clearError");
+  }
+  emit("clearError")
 }
 
 function onFileChange(event: Event): void {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
   void readFile(file).catch((error: unknown) => {
-    emit("error", error instanceof Error ? error.message : "Could not read image");
-  });
+    emit(
+      "error",
+      error instanceof Error ? error.message : "Could not read image",
+    )
+  })
 }
 
 function onDrop(event: DragEvent): void {
-  isDragging.value = false;
-  const file = event.dataTransfer?.files?.[0];
-  if (!file) return;
+  isDragging.value = false
+  const file = event.dataTransfer?.files?.[0]
+  if (!file) return
   void readFile(file).catch((error: unknown) => {
-    emit("error", error instanceof Error ? error.message : "Could not read image");
-  });
+    emit(
+      "error",
+      error instanceof Error ? error.message : "Could not read image",
+    )
+  })
 }
 
 function openPicker(): void {
-  if (props.analyzing) return;
-  fileInput.value?.click();
+  if (props.analyzing) return
+  fileInput.value?.click()
 }
 
 function runAnalysis(): void {
-  if (!selectedImage.value || props.analyzing) return;
-  emit("analyze", selectedImage.value);
+  if (!selectedImage.value || props.analyzing) return
+  emit("analyze", selectedImage.value)
 }
 
 onBeforeUnmount(() => {
   if (selectedImage.value) {
-    revokePreview(selectedImage.value.previewUrl);
+    revokePreview(selectedImage.value.previewUrl)
   }
-});
+})
 </script>
 
 <template>
@@ -129,8 +135,8 @@ onBeforeUnmount(() => {
         <p class="intro">
           Upload a photo named with the field coordinates, e.g.
           <code>39.060664,1.397765.png</code>. A vision agent reads the image,
-          weather is fetched for those coordinates, and the full pipeline produces
-          an irrigation recommendation.
+          weather is fetched for those coordinates, and the full pipeline
+          produces an irrigation recommendation.
         </p>
       </div>
     </div>
@@ -245,7 +251,9 @@ h2 {
   cursor: pointer;
   overflow: hidden;
   background: var(--surface-muted);
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .dropzone:hover:not(.filled) {

@@ -1,18 +1,14 @@
 <script setup lang="ts">
 defineProps<{
-  disabled?: boolean;
-  loading?: boolean;
-  loadingLabel?: string;
-  label?: string;
-}>();
+  disabled?: boolean
+  loading?: boolean
+  loadingLabel?: string
+  label?: string
+}>()
 </script>
 
 <template>
-  <button
-    type="button"
-    class="analyze-button"
-    :disabled="disabled || loading"
-  >
+  <button type="button" class="analyze-button" :disabled="disabled || loading">
     {{ loading ? (loadingLabel ?? "Analyzing…") : (label ?? "Analyze") }}
   </button>
 </template>
@@ -26,7 +22,9 @@ defineProps<{
   color: var(--green);
   font-size: 0.95rem;
   font-weight: 600;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
 }
 
 .analyze-button:hover:not(:disabled) {

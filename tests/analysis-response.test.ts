@@ -1,7 +1,7 @@
-import assert from "node:assert/strict";
-import { it } from "node:test";
-import type { PipelineResult } from "../backend/domain/pipeline/pipeline.schema.js";
-import { toAnalysisResponse } from "../backend/presentation/http/analysis-response.js";
+import assert from "node:assert/strict"
+import { it } from "node:test"
+import type { PipelineResult } from "../backend/domain/pipeline/pipeline.schema.js"
+import { toAnalysisResponse } from "../backend/presentation/http/analysis-response.js"
 
 it("omits full agent traces from the public analysis response", () => {
   const result = {
@@ -16,12 +16,12 @@ it("omits full agent traces from the public analysis response", () => {
       },
       trace: [{ input: { private: true }, output: { internal: true } }],
     },
-  } as unknown as PipelineResult;
+  } as unknown as PipelineResult
 
-  const response = toAnalysisResponse(result);
+  const response = toAnalysisResponse(result)
 
-  assert.deepEqual(response.analysis, result.analysis);
-  assert.deepEqual(response.meta.metrics, result.meta.metrics);
-  assert.deepEqual(response.meta.prompt_versions, result.meta.prompt_versions);
-  assert.equal("trace" in response.meta, false);
-});
+  assert.deepEqual(response.analysis, result.analysis)
+  assert.deepEqual(response.meta.metrics, result.meta.metrics)
+  assert.deepEqual(response.meta.prompt_versions, result.meta.prompt_versions)
+  assert.equal("trace" in response.meta, false)
+})

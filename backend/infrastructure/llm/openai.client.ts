@@ -1,19 +1,20 @@
-import OpenAI from "openai";
+import OpenAI from "openai"
 
-let client: OpenAI | undefined;
+let client: OpenAI | undefined
 
 export function getOpenAIClient(): OpenAI {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("Missing OPENAI_API_KEY.");
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) {
+    throw new Error("Missing OPENAI_API_KEY.")
   }
 
   client ??= new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
+    apiKey,
+  })
 
-  return client;
+  return client
 }
 
 export function getModel(): string {
-  return process.env.OPENAI_MODEL ?? "gpt-4o-mini";
+  return process.env.VITE_OPENAI_MODEL ?? "gpt-4o-mini"
 }

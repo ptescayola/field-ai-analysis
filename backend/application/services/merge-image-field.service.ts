@@ -1,10 +1,10 @@
-import type { ImageAnalystOutput } from "../../domain/analysis/image-analyst.schema.js";
-import type { ParsedCoordinates } from "../../domain/field/coordinates-from-filename.js";
-import type { FieldData } from "../../domain/field/field.schema.js";
+import type { ImageAnalystOutput } from "../../domain/analysis/image-analyst.schema.js"
+import type { ParsedCoordinates } from "../../domain/field/coordinates-from-filename.js"
+import type { FieldData } from "../../domain/field/field.schema.js"
 
 function formatObservation(category: string, observation: string): string {
-  const label = category.replaceAll("_", " ");
-  return `[Image] ${label}: ${observation}`;
+  const label = category.replaceAll("_", " ")
+  return `[Image] ${label}: ${observation}`
 }
 
 function resolveCropType(imageAnalysis: ImageAnalystOutput): string {
@@ -12,53 +12,53 @@ function resolveCropType(imageAnalysis: ImageAnalystOutput): string {
     imageAnalysis.crop_detected &&
     imageAnalysis.crop_detected.confidence >= 0.5
   ) {
-    return imageAnalysis.crop_detected.type;
+    return imageAnalysis.crop_detected.type
   }
 
-  const topCandidate = imageAnalysis.species_candidates[0];
+  const topCandidate = imageAnalysis.species_candidates[0]
   if (topCandidate && topCandidate.confidence >= 0.5) {
-    return topCandidate.common_name;
+    return topCandidate.common_name
   }
 
-  return "unknown";
+  return "unknown"
 }
 
 function resolveVariety(imageAnalysis: ImageAnalystOutput): string {
-  if (imageAnalysis.variety_guess) return imageAnalysis.variety_guess;
-  return "unknown";
+  if (imageAnalysis.variety_guess) return imageAnalysis.variety_guess
+  return "unknown"
 }
 
 function buildSpeciesObservations(imageAnalysis: ImageAnalystOutput): string[] {
   const lines: string[] = [
     `Vegetation type from image: ${imageAnalysis.vegetation_type}`,
-  ];
+  ]
 
   if (imageAnalysis.species_candidates.length > 0) {
     const candidates = imageAnalysis.species_candidates
       .map((candidate) => {
         const scientific = candidate.scientific_name
           ? ` (${candidate.scientific_name})`
-          : "";
-        return `${candidate.common_name}${scientific} ${Math.round(candidate.confidence * 100)}%`;
+          : ""
+        return `${candidate.common_name}${scientific} ${Math.round(candidate.confidence * 100)}%`
       })
-      .join("; ");
-    lines.push(`Species candidates from image: ${candidates}`);
+      .join("; ")
+    lines.push(`Species candidates from image: ${candidates}`)
   }
 
   if (imageAnalysis.variety_guess) {
-    lines.push(`Variety guess from image: ${imageAnalysis.variety_guess}`);
+    lines.push(`Variety guess from image: ${imageAnalysis.variety_guess}`)
   }
 
-  return lines;
+  return lines
 }
 
 export function mergeImageIntoField(
   field: FieldData,
-  imageAnalysis: ImageAnalystOutput
+  imageAnalysis: ImageAnalystOutput,
 ): FieldData {
   const imageObservations = imageAnalysis.visual_observations.map((item) =>
-    formatObservation(item.category, item.observation)
-  );
+    formatObservation(item.category, item.observation),
+  )
 
   const mergedObservations = [
     `Image analysis summary: ${imageAnalysis.summary}`,
@@ -66,10 +66,10 @@ export function mergeImageIntoField(
     `Irrigation signals from image: ${imageAnalysis.irrigation_signals}`,
     ...imageObservations,
     ...field.observations,
-  ];
+  ]
 
-  const cropType = resolveCropType(imageAnalysis);
-  const resolvedCropType = cropType !== "unknown" ? cropType : field.crop.type;
+  const cropType = resolveCropType(imageAnalysis)
+  const resolvedCropType = cropType !== "unknown" ? cropType : field.crop.type
 
   return {
     ...field,
@@ -77,8 +77,7 @@ export function mergeImageIntoField(
       ...field.crop,
       type: resolvedCropType,
       variety:
-        imageAnalysis.variety_guess &&
-        imageAnalysis.variety_guess !== "unknown"
+        imageAnalysis.variety_guess && imageAnalysis.variety_guess !== "unknown"
           ? imageAnalysis.variety_guess
           : field.crop.variety,
       growth_stage:
@@ -87,16 +86,16 @@ export function mergeImageIntoField(
           : field.crop.growth_stage,
     },
     observations: mergedObservations,
-  };
+  }
 }
 
 export function synthesizeFieldFromImage(
   imageAnalysis: ImageAnalystOutput,
-  coordinates: ParsedCoordinates
+  coordinates: ParsedCoordinates,
 ): FieldData {
   const imageObservations = imageAnalysis.visual_observations.map((item) =>
-    formatObservation(item.category, item.observation)
-  );
+    formatObservation(item.category, item.observation),
+  )
 
   return {
     field: {
@@ -138,5 +137,5 @@ export function synthesizeFieldFromImage(
       `Image limitations: ${imageAnalysis.limitations}`,
       ...imageObservations,
     ],
-  };
+  }
 }

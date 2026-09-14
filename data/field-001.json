@@ -1,16 +1,55 @@
 {
   "field": {
     "id": "FIELD-001",
-    "name": "O Salnés, Galicia",
+    "name": "Viña en Cuíña, Vilanova de Arousa (O Salnés)",
     "location": {
-      "lat": 42.51,
-      "lng": -8.81
+      "lat": 42.52948,
+      "lng": -8.78464
     },
-    "area_hectares": 6.8
+    "area_hectares": 3.7,
+    "boundary": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [-8.785832, 42.528741],
+          [-8.785776, 42.528885],
+          [-8.785708, 42.529117],
+          [-8.785672, 42.529206],
+          [-8.785962, 42.52933],
+          [-8.785872, 42.529498],
+          [-8.785579, 42.529541],
+          [-8.785443, 42.529631],
+          [-8.785263, 42.529826],
+          [-8.785112, 42.530068],
+          [-8.785259, 42.530307],
+          [-8.785068, 42.530765],
+          [-8.784846, 42.530675],
+          [-8.78491, 42.53038],
+          [-8.784766, 42.530342],
+          [-8.78463, 42.530307],
+          [-8.784333, 42.530286],
+          [-8.784329, 42.530316],
+          [-8.784177, 42.530324],
+          [-8.782333, 42.529634],
+          [-8.782685, 42.529281],
+          [-8.784173, 42.529831],
+          [-8.784405, 42.529374],
+          [-8.783005, 42.52897],
+          [-8.783069, 42.52887],
+          [-8.782914, 42.528744],
+          [-8.783322, 42.528264],
+          [-8.783562, 42.528209],
+          [-8.784381, 42.528568],
+          [-8.784999, 42.528839],
+          [-8.785207, 42.528581],
+          [-8.785832, 42.528741]
+        ]
+      ]
+    }
   },
   "crop": {
     "type": "grape",
-    "variety": "albarino",
+    "variety": "unspecified",
     "planting_date": "2019-03-18",
     "growth_stage": "ripening"
   },
@@ -31,8 +70,11 @@
     "ndvi_previous_week": 0.8
   },
   "observations": [
-    "Canopy remains vigorous after several days of Atlantic rainfall",
-    "Minor mildew symptoms detected in two low-ventilation rows",
-    "No water stress observed"
+    "Parcel boundary from OpenStreetMap (way 1318910132): landuse=vineyard, crop=grape; no finca name or grape variety in the source",
+    "Location: Cuíña, Tremoedo, Vilanova de Arousa, comarca O Salnés (Pontevedra)",
+    "Soil, weather, NDVI, planting date, and agronomic notes below are synthetic demo data, not verified for this polygon",
+    "Canopy remains vigorous after several days of Atlantic rainfall (demo scenario)",
+    "Minor mildew symptoms detected in two low-ventilation rows (demo scenario)",
+    "No water stress observed (demo scenario)"
   ]
 }

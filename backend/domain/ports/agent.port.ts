@@ -1,34 +1,34 @@
-import type { ZodType } from "zod";
-import type { AgentTrace } from "../pipeline/pipeline.schema.js";
+import type { ZodType } from "zod"
+import type { AgentTrace } from "../pipeline/pipeline.schema.js"
 
 export interface LoadedPrompt {
-  content: string;
-  version: string;
+  content: string
+  version: string
 }
 
 export interface PromptRepository {
-  getPrompt(agentName: string): Promise<LoadedPrompt>;
-  getAllVersions(): Promise<Record<string, string>>;
+  getPrompt(agentName: string): Promise<LoadedPrompt>
+  getAllVersions(): Promise<Record<string, string>>
 }
 
 export interface AgentRunResult<T> {
-  output: T;
-  trace: AgentTrace;
+  output: T
+  trace: AgentTrace
 }
 
 export interface AgentImageInput {
-  base64: string;
-  mimeType: string;
+  base64: string
+  mimeType: string
 }
 
 export interface AgentRunParams<T> {
-  agentName: string;
-  input: unknown;
-  outputSchema: ZodType<T>;
-  responseName: string;
-  image?: AgentImageInput;
+  agentName: string
+  input: unknown
+  outputSchema: ZodType<T>
+  responseName: string
+  image?: AgentImageInput
 }
 
 export interface AgentPort {
-  run<T>(params: AgentRunParams<T>): Promise<AgentRunResult<T>>;
+  run<T>(params: AgentRunParams<T>): Promise<AgentRunResult<T>>
 }

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { ParsedMetric } from "../../utils/metric-visualization";
+import type { ParsedMetric } from "../../utils/metric-visualization"
 
 defineProps<{
-  metric: ParsedMetric;
-  assessmentLabel: string;
-}>();
+  metric: ParsedMetric
+  assessmentLabel: string
+}>()
 </script>
 
 <template>

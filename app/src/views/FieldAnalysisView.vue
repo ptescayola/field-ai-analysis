@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { analyzeField } from "../api/client";
-import AnalysisLoadingState from "../components/AnalysisLoadingState.vue";
-import AnalysisView from "../components/AnalysisView.vue";
-import AnalyzeButton from "../components/AnalyzeButton.vue";
-import EmptyState from "../components/EmptyState.vue";
-import ErrorAlert from "../components/ErrorAlert.vue";
-import FieldPanel from "../components/FieldPanel.vue";
-import FieldSelector from "../components/FieldSelector.vue";
-import HeaderActions from "../components/HeaderActions.vue";
-import { useFields } from "../composables/useFields";
-import AppLayout from "../layouts/AppLayout.vue";
-import type { PipelineResult } from "../types";
+import { ref } from "vue"
+import { analyzeField } from "../api/client"
+import AnalysisLoadingState from "../components/AnalysisLoadingState.vue"
+import AnalysisView from "../components/AnalysisView.vue"
+import AnalyzeButton from "../components/AnalyzeButton.vue"
+import EmptyState from "../components/EmptyState.vue"
+import ErrorAlert from "../components/ErrorAlert.vue"
+import FieldMapView from "../components/map/FieldMapView.vue"
+import FieldPanel from "../components/FieldPanel.vue"
+import FieldSelector from "../components/FieldSelector.vue"
+import HeaderActions from "../components/HeaderActions.vue"
+import { useFields } from "../composables/useFields"
+import AppLayout from "../layouts/AppLayout.vue"
+import type { PipelineResult } from "../types"
 
 const {
   fields,
@@ -21,29 +22,30 @@ const {
   loadingField,
   error: fieldsError,
   selectField,
-} = useFields();
+} = useFields()
 
-const result = ref<PipelineResult | null>(null);
-const analyzing = ref(false);
-const analysisError = ref<string | null>(null);
+const result = ref<PipelineResult | null>(null)
+const analyzing = ref(false)
+const analysisError = ref<string | null>(null)
 
 async function onFieldSelected(file: string): Promise<void> {
-  result.value = null;
-  analysisError.value = null;
-  await selectField(file);
+  if (file === selectedFile.value) return
+  result.value = null
+  analysisError.value = null
+  await selectField(file)
 }
 
 async function runAnalysis(): Promise<void> {
-  if (!selectedFile.value) return;
-  analyzing.value = true;
-  analysisError.value = null;
-  result.value = null;
+  if (!selectedFile.value) return
+  analyzing.value = true
+  analysisError.value = null
+  result.value = null
   try {
-    result.value = await analyzeField(selectedFile.value);
+    result.value = await analyzeField(selectedFile.value)
   } catch (e) {
-    analysisError.value = e instanceof Error ? e.message : "Analysis failed";
+    analysisError.value = e instanceof Error ? e.message : "Analysis failed"
   } finally {
-    analyzing.value = false;
+    analyzing.value = false
   }
 }
 </script>
@@ -75,7 +77,21 @@ async function runAnalysis(): Promise<void> {
     <EmptyState v-if="loadingFields" message="Loading fields…" />
 
     <template v-else>
-      <EmptyState v-if="fields.length === 0" message="No fields are available." />
+      <EmptyState
+        v-if="fields.length === 0"
+        message="No fields are available."
+      />
+
+      <FieldMapView
+        v-if="fields.length > 0"
+        class="field-map-wrap"
+        :selected-file="selectedFile"
+        :health-score="result?.analysis.field_health_score ?? null"
+        :irrigate-next48h="
+          result?.analysis.irrigation.should_irrigate_next_48h ?? null
+        "
+        @select-field="onFieldSelected"
+      />
 
       <AnalysisLoadingState
         v-if="analyzing"
@@ -83,14 +99,16 @@ async function runAnalysis(): Promise<void> {
         hint="This may take 10–20 seconds"
       />
 
-      <AnalysisView
-        v-else-if="result"
-        :result="result"
-        :field="fieldData"
-      />
+      <AnalysisView v-else-if="result" :result="result" :field="fieldData" />
 
       <EmptyState v-if="loadingField" message="Loading field data…" />
       <FieldPanel v-else-if="fieldData" :field="fieldData" />
     </template>
   </AppLayout>
 </template>
+
+<style scoped>
+.field-map-wrap {
+  margin-bottom: 1rem;
+}
+</style>

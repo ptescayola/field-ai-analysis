@@ -1,28 +1,26 @@
-import type { PipelineResult } from "../../domain/pipeline/pipeline.schema.js";
+import type { PipelineResult } from "../../domain/pipeline/pipeline.schema.js"
 
 function formatPercent(value: number): string {
-  return `${Math.round(value * 100)}%`;
+  return `${Math.round(value * 100)}%`
 }
 
 function formatLabel(value: string): string {
   return value
     .replaceAll("_", " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+    .replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
-function formatRiskList(
-  risks: PipelineResult["analysis"]["risks"]
-): string {
+function formatRiskList(risks: PipelineResult["analysis"]["risks"]): string {
   if (risks.length === 0) {
-    return "  None identified";
+    return "  None identified"
   }
 
   return risks
     .map(
       (risk) =>
-        `  • ${formatLabel(risk.type)} (${risk.severity}, confidence ${formatPercent(risk.confidence)})\n    ${risk.evidence}`
+        `  • ${formatLabel(risk.type)} (${risk.severity}, confidence ${formatPercent(risk.confidence)})\n    ${risk.evidence}`,
     )
-    .join("\n");
+    .join("\n")
 }
 
 function formatMeta(meta: PipelineResult["meta"]): string[] {
@@ -35,19 +33,19 @@ function formatMeta(meta: PipelineResult["meta"]): string[] {
     `Estimated cost: $${meta.metrics.estimated_cost_usd.toFixed(6)} USD`,
     ...meta.metrics.agents.map(
       (agent) =>
-        `  • ${agent.agent}: ${agent.duration_ms}ms, ${agent.usage.total_tokens} tokens`
+        `  • ${agent.agent}: ${agent.duration_ms}ms, ${agent.usage.total_tokens} tokens`,
     ),
     "",
     "Prompt versions",
     "---------------",
     ...Object.entries(meta.prompt_versions).map(
-      ([agent, version]) => `  • ${agent}: ${version}`
+      ([agent, version]) => `  • ${agent}: ${version}`,
     ),
-  ];
+  ]
 }
 
 export function formatAnalysis(result: PipelineResult): string {
-  const { analysis, meta } = result;
+  const { analysis, meta } = result
 
   const lines = [
     "Field AI Analysis",
@@ -81,7 +79,7 @@ export function formatAnalysis(result: PipelineResult): string {
     "Observations — Data Analyst",
     "----------------------------",
     ...analysis.agents.data_analyst.observations.map(
-      (item) => `  • ${item.metric}: ${item.value} (${item.assessment})`
+      (item) => `  • ${item.metric}: ${item.value} (${item.assessment})`,
     ),
     "",
     "Interpretation — Agronomist",
@@ -95,11 +93,11 @@ export function formatAnalysis(result: PipelineResult): string {
     "--------------------",
     formatRiskList(analysis.agents.risk_analyst.risks),
     ...formatMeta(meta),
-  ];
+  ]
 
-  return lines.join("\n");
+  return lines.join("\n")
 }
 
 export function formatJson(result: PipelineResult): string {
-  return JSON.stringify(result, null, 2);
+  return JSON.stringify(result, null, 2)
 }

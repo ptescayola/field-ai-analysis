@@ -1,37 +1,37 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useWeatherForecast } from "../../composables/useWeatherForecast";
-import type { FieldData } from "../../types";
+import { computed } from "vue"
+import { useWeatherForecast } from "../../composables/useWeatherForecast"
+import type { FieldData } from "../../types"
 
 const props = defineProps<{
-  field: FieldData;
-}>();
+  field: FieldData
+}>()
 
-const latitude = computed(() => props.field.field.location.lat);
-const longitude = computed(() => props.field.field.location.lng);
+const latitude = computed(() => props.field.field.location.lat)
+const longitude = computed(() => props.field.field.location.lng)
 
-const { rainNext7Days } = useWeatherForecast(latitude, longitude);
+const { rainNext7Days } = useWeatherForecast(latitude, longitude)
 
 const ndviDelta = computed(
   () => props.field.vegetation.ndvi - props.field.vegetation.ndvi_previous_week,
-);
+)
 
 const rain7dMm = computed(
   () => rainNext7Days.value ?? props.field.weather.rain_last_7_days_mm,
-);
+)
 
-const rain7dIsLive = computed(() => rainNext7Days.value !== null);
+const rain7dIsLive = computed(() => rainNext7Days.value !== null)
 
 function formatLabel(value: string): string {
-  return value.replaceAll("_", " ");
+  return value.replaceAll("_", " ")
 }
 
 function clampPct(value: number, max: number): number {
-  return Math.min(100, Math.max(0, (value / max) * 100));
+  return Math.min(100, Math.max(0, (value / max) * 100))
 }
 
 function phFillPct(ph: number): number {
-  return clampPct(ph - 4, 6);
+  return clampPct(ph - 4, 6)
 }
 
 const keyMetrics = computed(() => [
@@ -60,8 +60,7 @@ const keyMetrics = computed(() => [
     fillPct: phFillPct(props.field.soil.ph),
     tone: "ph",
   },
-]);
-
+])
 </script>
 
 <template>
@@ -125,7 +124,9 @@ const keyMetrics = computed(() => [
                 :style="{ width: `${field.vegetation.ndvi * 100}%` }"
               />
             </div>
-            <span class="ndvi-value">{{ field.vegetation.ndvi.toFixed(2) }}</span>
+            <span class="ndvi-value">{{
+              field.vegetation.ndvi.toFixed(2)
+            }}</span>
           </div>
         </div>
         <span
@@ -141,7 +142,11 @@ const keyMetrics = computed(() => [
         <div class="soil-metrics">
           <div class="soil-metric">
             <div class="soil-metric-label-row">
-              <svg class="soil-icon soil-icon--moisture" viewBox="0 0 24 24" aria-hidden="true">
+              <svg
+                class="soil-icon soil-icon--moisture"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <path
                   d="M12 2.5c-3.2 4.5-6 8.2-6 11.8a6 6 0 1 0 12 0c0-3.6-2.8-7.3-6-11.8z"
                   fill="currentColor"
@@ -155,11 +160,17 @@ const keyMetrics = computed(() => [
                 :style="{ height: `${field.soil.moisture_percent}%` }"
               />
             </div>
-            <strong class="soil-value">{{ field.soil.moisture_percent }}%</strong>
+            <strong class="soil-value"
+              >{{ field.soil.moisture_percent }}%</strong
+            >
           </div>
           <div class="soil-metric">
             <div class="soil-metric-label-row">
-              <svg class="soil-icon soil-icon--temp" viewBox="0 0 24 24" aria-hidden="true">
+              <svg
+                class="soil-icon soil-icon--temp"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <path
                   d="M14 14.5V6a2 2 0 1 0-4 0v8.5a4 4 0 1 0 4 0z"
                   fill="none"
@@ -470,5 +481,4 @@ const keyMetrics = computed(() => [
   min-height: 1.15rem;
   text-align: center;
 }
-
 </style>

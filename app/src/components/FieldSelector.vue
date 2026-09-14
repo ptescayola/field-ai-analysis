@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import type { FieldListItem } from "../types";
+import type { FieldListItem } from "../types"
 
 defineProps<{
-  fields: FieldListItem[];
-  modelValue: string;
-  disabled?: boolean;
-  label?: string;
-  id?: string;
-  allowEmpty?: boolean;
-  emptyLabel?: string;
-}>();
+  fields: FieldListItem[]
+  modelValue: string
+  disabled?: boolean
+  label?: string
+  id?: string
+  allowEmpty?: boolean
+  emptyLabel?: string
+}>()
 
 const emit = defineEmits<{
-  "update:modelValue": [file: string];
-}>();
+  "update:modelValue": [file: string]
+}>()
 
 function onChange(event: Event): void {
-  emit("update:modelValue", (event.target as HTMLSelectElement).value);
+  emit("update:modelValue", (event.target as HTMLSelectElement).value)
 }
 </script>
 

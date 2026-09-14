@@ -1,30 +1,30 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed } from "vue"
 import {
   getMeteoconsIconUrl,
   getWeatherDescription,
   type DayPhase,
-} from "../utils/wmo-weather";
+} from "../utils/wmo-weather"
 
 const props = withDefaults(
   defineProps<{
-    weatherCode: number;
-    dayPhase?: DayPhase;
-    size?: "sm" | "md" | "lg";
+    weatherCode: number
+    dayPhase?: DayPhase
+    size?: "sm" | "md" | "lg"
   }>(),
   {
     dayPhase: "day",
     size: "md",
   },
-);
+)
 
 const iconUrl = computed(() =>
   getMeteoconsIconUrl(props.weatherCode, props.dayPhase),
-);
+)
 
 const label = computed(() =>
   getWeatherDescription(props.weatherCode, props.dayPhase),
-);
+)
 </script>
 
 <template>

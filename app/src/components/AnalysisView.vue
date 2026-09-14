@@ -1,32 +1,32 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import FieldSnapshotCharts from "./analysis/FieldSnapshotCharts.vue";
-import MetricBar from "./analysis/MetricBar.vue";
-import RiskMeter from "./analysis/RiskMeter.vue";
-import ScoreRing from "./analysis/ScoreRing.vue";
+import { computed } from "vue"
+import FieldSnapshotCharts from "./analysis/FieldSnapshotCharts.vue"
+import MetricBar from "./analysis/MetricBar.vue"
+import RiskMeter from "./analysis/RiskMeter.vue"
+import ScoreRing from "./analysis/ScoreRing.vue"
 import {
   healthScoreTone,
   parseObservationMetric,
-} from "../utils/metric-visualization";
-import type { FieldData, PipelineResult, Risk } from "../types";
+} from "../utils/metric-visualization"
+import type { FieldData, PipelineResult, Risk } from "../types"
 
 const props = defineProps<{
-  result: PipelineResult;
-  field?: FieldData | null;
-}>();
+  result: PipelineResult
+  field?: FieldData | null
+}>()
 
 function formatRiskType(type: string): string {
   return type
     .replaceAll("_", " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+    .replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
 function severityClass(severity: Risk["severity"]): string {
-  return `severity-${severity}`;
+  return `severity-${severity}`
 }
 
 function formatPercent(value: number): string {
-  return `${Math.round(value * 100)}%`;
+  return `${Math.round(value * 100)}%`
 }
 
 const METRIC_LABELS: Record<string, string> = {
@@ -36,57 +36,70 @@ const METRIC_LABELS: Record<string, string> = {
   rainfall_last_7_days: "Rainfall (last 7 days)",
   ndvi: "NDVI",
   rain_forecast_next_48h: "Rain forecast (next 48h)",
-};
+}
 
 const ASSESSMENT_COPY: Record<string, { label: string; hint: string }> = {
   low: { label: "Low", hint: "Below typical levels for this metric" },
   moderate: { label: "Moderate", hint: "Within a normal range" },
   high: { label: "High", hint: "Above typical levels for this metric" },
-  "moderately high": { label: "Moderately high", hint: "Slightly above normal" },
+  "moderately high": {
+    label: "Moderately high",
+    hint: "Slightly above normal",
+  },
   "moderately low": { label: "Moderately low", hint: "Slightly below normal" },
   normal: { label: "Normal", hint: "Within the expected range" },
-  decreasing: { label: "Decreasing", hint: "Trending downward compared to recent values" },
-  increasing: { label: "Increasing", hint: "Trending upward compared to recent values" },
+  decreasing: {
+    label: "Decreasing",
+    hint: "Trending downward compared to recent values",
+  },
+  increasing: {
+    label: "Increasing",
+    hint: "Trending upward compared to recent values",
+  },
   stable: { label: "Stable", hint: "No significant change detected" },
   expected: { label: "Expected", hint: "Matches the forecast for this period" },
-  anomalous: { label: "Unusual", hint: "Outside typical patterns for this field" },
-};
+  anomalous: {
+    label: "Unusual",
+    hint: "Outside typical patterns for this field",
+  },
+}
 
 function normalizeKey(value: string): string {
-  return value.trim().toLowerCase().replaceAll("_", " ");
+  return value.trim().toLowerCase().replaceAll("_", " ")
 }
 
 function formatMetric(metric: string): string {
-  const key = metric.trim().toLowerCase();
-  return METRIC_LABELS[key] ?? metric.replaceAll("_", " ");
+  const key = metric.trim().toLowerCase()
+  return METRIC_LABELS[key] ?? metric.replaceAll("_", " ")
 }
 
 function formatAssessment(assessment: string): { label: string; hint: string } {
-  const key = normalizeKey(assessment);
-  const copy = ASSESSMENT_COPY[key];
-  if (copy) return copy;
+  const key = normalizeKey(assessment)
+  const copy = ASSESSMENT_COPY[key]
+  if (copy) return copy
 
   const label = assessment
     .replaceAll("_", " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+    .replace(/\b\w/g, (char) => char.toUpperCase())
 
-  return { label, hint: "Assessment from field data analysis" };
+  return { label, hint: "Assessment from field data analysis" }
 }
 
 function assessmentTone(assessment: string): string {
-  const key = normalizeKey(assessment);
-  if (["low", "moderately low", "decreasing"].includes(key)) return "tone-low";
-  if (["high", "moderately high", "increasing", "anomalous"].includes(key)) return "tone-high";
-  return "tone-neutral";
+  const key = normalizeKey(assessment)
+  if (["low", "moderately low", "decreasing"].includes(key)) return "tone-low"
+  if (["high", "moderately high", "increasing", "anomalous"].includes(key))
+    return "tone-high"
+  return "tone-neutral"
 }
 
 function getAssessmentCopy(assessment: string): {
-  label: string;
-  hint: string;
-  tone: string;
+  label: string
+  hint: string
+  tone: string
 } {
-  const { label, hint } = formatAssessment(assessment);
-  return { label, hint, tone: assessmentTone(assessment) };
+  const { label, hint } = formatAssessment(assessment)
+  return { label, hint, tone: assessmentTone(assessment) }
 }
 
 const dataAnalystObservations = computed(() =>
@@ -95,23 +108,23 @@ const dataAnalystObservations = computed(() =>
     metricLabel: formatMetric(obs.metric),
     assessmentCopy: getAssessmentCopy(obs.assessment),
     chart: parseObservationMetric(obs.metric, obs.value, obs.assessment),
-  }))
-);
+  })),
+)
 
 const chartableObservations = computed(() =>
   dataAnalystObservations.value.filter((obs) => obs.chart !== null),
-);
+)
 
 const healthTone = computed(() =>
   healthScoreTone(props.result.analysis.field_health_score),
-);
+)
 
 const imageAnalyst = computed(
-  () => props.result.analysis.agents.image_analyst ?? null
-);
+  () => props.result.analysis.agents.image_analyst ?? null,
+)
 
 function formatCategory(category: string): string {
-  return formatRiskType(category);
+  return formatRiskType(category)
 }
 
 const VEGETATION_LABELS: Record<string, string> = {
@@ -121,10 +134,10 @@ const VEGETATION_LABELS: Record<string, string> = {
   herbaceous: "Herbaceous crop",
   mixed: "Mixed vegetation",
   unknown: "Unknown",
-};
+}
 
 function formatVegetationType(type: string): string {
-  return VEGETATION_LABELS[type] ?? formatRiskType(type);
+  return VEGETATION_LABELS[type] ?? formatRiskType(type)
 }
 </script>
 
@@ -137,7 +150,9 @@ function formatVegetationType(type: string): string {
           <span class="image-kpi">
             {{ formatVegetationType(imageAnalyst.vegetation_type) }}
           </span>
-          <span class="image-kpi">{{ imageAnalyst.estimated_plant_health }}</span>
+          <span class="image-kpi">{{
+            imageAnalyst.estimated_plant_health
+          }}</span>
           <span v-if="imageAnalyst.crop_detected" class="image-kpi">
             {{ imageAnalyst.crop_detected.type }}
             {{ formatPercent(imageAnalyst.crop_detected.confidence) }}
@@ -193,10 +208,7 @@ function formatVegetationType(type: string): string {
         >
           <h3 class="image-panel-title">Visual observations</h3>
           <ul class="image-observations-compact">
-            <li
-              v-for="(obs, i) in imageAnalyst.visual_observations"
-              :key="i"
-            >
+            <li v-for="(obs, i) in imageAnalyst.visual_observations" :key="i">
               <span class="obs-label">{{ formatCategory(obs.category) }}</span>
               <span
                 v-if="obs.severity"
@@ -225,7 +237,9 @@ function formatVegetationType(type: string): string {
       >
         <p class="eyebrow">Irrigate in the next 48h?</p>
         <p class="verdict">
-          {{ result.analysis.irrigation.should_irrigate_next_48h ? "Yes" : "No" }}
+          {{
+            result.analysis.irrigation.should_irrigate_next_48h ? "Yes" : "No"
+          }}
         </p>
         <p class="rationale">{{ result.analysis.main_recommendation }}</p>
       </div>
@@ -308,10 +322,24 @@ function formatVegetationType(type: string): string {
       <article class="card agent">
         <h3>Agronomist</h3>
         <dl>
-          <div><dt>Irrigation</dt><dd>{{ result.analysis.agents.agronomist.irrigation_assessment }}</dd></div>
-          <div><dt>Stress</dt><dd>{{ result.analysis.agents.agronomist.crop_stress }}</dd></div>
-          <div><dt>Development</dt><dd>{{ result.analysis.agents.agronomist.crop_development }}</dd></div>
-          <div><dt>Health</dt><dd>{{ result.analysis.agents.agronomist.plant_health }}</dd></div>
+          <div>
+            <dt>Irrigation</dt>
+            <dd>
+              {{ result.analysis.agents.agronomist.irrigation_assessment }}
+            </dd>
+          </div>
+          <div>
+            <dt>Stress</dt>
+            <dd>{{ result.analysis.agents.agronomist.crop_stress }}</dd>
+          </div>
+          <div>
+            <dt>Development</dt>
+            <dd>{{ result.analysis.agents.agronomist.crop_development }}</dd>
+          </div>
+          <div>
+            <dt>Health</dt>
+            <dd>{{ result.analysis.agents.agronomist.plant_health }}</dd>
+          </div>
         </dl>
         <details class="reasoning-block">
           <summary>Reasoning</summary>
