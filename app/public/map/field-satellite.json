@@ -1,0 +1,27 @@
+{
+  "version": 8,
+  "name": "Field AI — satellite",
+  "metadata": {
+    "mapbox:autocomposite": false
+  },
+  "sources": {
+    "esri-imagery": {
+      "type": "raster",
+      "tiles": [
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+      ],
+      "tileSize": 256,
+      "maxzoom": 19,
+      "attribution": "Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community"
+    }
+  },
+  "layers": [
+    {
+      "id": "esri-imagery",
+      "type": "raster",
+      "source": "esri-imagery",
+      "minzoom": 0,
+      "maxzoom": 22
+    }
+  ]
+}

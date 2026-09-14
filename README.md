@@ -112,10 +112,9 @@ In **Project → Settings → Environment Variables**:
 | Variable | Required | Environments |
 |----------|----------|--------------|
 | `OPENAI_API_KEY` | Yes | Production, Preview, Development (server only) |
-| `MAP_API_KEY` | Yes* | MapTiler key (*required for Map/Satellite basemap in the UI) |
 | `VITE_OPENAI_MODEL` | No | Defaults to `gpt-4o-mini` |
-| `VITE_MAPTILER_HOST` | No | e.g. `api.maptiler.com` |
-| `VITE_MAP_STYLE_URL` | No | Map style URL without `?key=` |
+| `VITE_MAP_STYLE_URL` | No | Override basemap style (default `/map/field-basemap.json` in `app/public/map/`) |
+| `VITE_MAP_SATELLITE_STYLE_URL` | No | Override satellite style (default `/map/field-satellite.json`) |
 | `APP_URL` | No | e.g. `https://field-ai-analysis.vercel.app` (CORS) |
 
 Leave `VITE_API_BASE_URL` **empty** when app and API share the same Vercel domain.
@@ -128,7 +127,7 @@ Do **not** commit `.env` to git.
 
 - Keep real credentials in local `.env` files or Vercel Environment Variables.
 - Only placeholders belong in `.env.example` and documentation.
-- `OPENAI_API_KEY` and `MAP_API_KEY` are server-side secrets in `.env` / Vercel. Only `MAP_*` vars listed in `envPrefix` are exposed to the Vue build; never add `OPENAI_*` to `envPrefix` or reference `OPENAI_API_KEY` from the frontend.
+- Never reference `OPENAI_API_KEY` from `import.meta.env` in the frontend.
 - Rotate a credential immediately if it is accidentally committed or printed.
 
 ### Verify

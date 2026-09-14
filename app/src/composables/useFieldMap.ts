@@ -38,32 +38,13 @@ import {
   type FieldPopupMetrics,
 } from "../utils/field-map-popup"
 import { boundsForBoundaries } from "../utils/map-bounds"
-import {
-  DEFAULT_MAP_STYLE_URL,
-  resolveMapSatelliteStyleUrl,
-  resolveMapStyleUrl,
-  withMapApiKey,
-} from "../utils/map-style-url"
 
-const MAPTILER_HOST = import.meta.env.VITE_MAPTILER_HOST
-const MAP_API_KEY = import.meta.env.MAP_API_KEY
-
-const MAP_STYLE_BASE = withMapApiKey(
-  import.meta.env.VITE_MAP_STYLE_URL,
-  MAP_API_KEY,
-)
-const SATELLITE_STYLE_BASE = withMapApiKey(
-  import.meta.env.VITE_MAP_SATELLITE_STYLE_URL,
-  MAP_API_KEY,
-)
-
-const MAP_STYLE_URL = resolveMapStyleUrl(MAP_STYLE_BASE, MAPTILER_HOST)
-const SATELLITE_STYLE_URL = resolveMapSatelliteStyleUrl(
-  MAP_STYLE_BASE,
-  SATELLITE_STYLE_BASE,
-  MAPTILER_HOST,
-  MAP_API_KEY,
-)
+const MAP_STYLE_URL =
+  import.meta.env.VITE_MAP_STYLE_URL?.trim() || "/map/field-basemap.json"
+const SATELLITE_STYLE_URL =
+  import.meta.env.VITE_MAP_SATELLITE_STYLE_URL?.trim() ||
+  "/map/field-satellite.json"
+const REMOTE_MAP_STYLE_FALLBACK = "https://demotiles.maplibre.org/style.json"
 
 const INITIAL_CENTER: LngLatLike = [-3.7, 40.4]
 const INITIAL_ZOOM = 5
@@ -92,7 +73,7 @@ export function useFieldMap(options: UseFieldMapOptions) {
   let usedFallbackStyle = false
 
   function activeStyleUrl(): string {
-    if (basemapMode.value === "satellite" && SATELLITE_STYLE_URL) {
+    if (basemapMode.value === "satellite") {
       return SATELLITE_STYLE_URL
     }
     return MAP_STYLE_URL
@@ -220,10 +201,10 @@ export function useFieldMap(options: UseFieldMapOptions) {
   function applyStyleFallback(map: Map, message: string): void {
     if (usedFallbackStyle) return
     if (!/style/i.test(message)) return
-    if (activeStyleUrl() === DEFAULT_MAP_STYLE_URL) return
+    if (activeStyleUrl() === REMOTE_MAP_STYLE_FALLBACK) return
 
     usedFallbackStyle = true
-    void map.setStyle(DEFAULT_MAP_STYLE_URL, { diff: false })
+    void map.setStyle(REMOTE_MAP_STYLE_FALLBACK, { diff: false })
   }
 
   function createMap(): void {
@@ -255,8 +236,6 @@ export function useFieldMap(options: UseFieldMapOptions) {
 
   function setBasemapMode(mode: BasemapMode): void {
     if (mode === basemapMode.value) return
-    if (mode === "satellite" && !SATELLITE_STYLE_URL) return
-
     basemapMode.value = mode
     usedFallbackStyle = false
     void mapRef.value?.setStyle(activeStyleUrl(), { diff: false })
@@ -311,7 +290,7 @@ export function useFieldMap(options: UseFieldMapOptions) {
     loading,
     loadError,
     basemapMode,
-    satelliteAvailable: SATELLITE_STYLE_URL !== null,
+    satelliteAvailable: true,
     setBasemapMode,
   }
 }
