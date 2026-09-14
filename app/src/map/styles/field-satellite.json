@@ -1,9 +1,6 @@
 {
   "version": 8,
   "name": "Field AI — satellite",
-  "metadata": {
-    "mapbox:autocomposite": false
-  },
   "sources": {
     "esri-imagery": {
       "type": "raster",

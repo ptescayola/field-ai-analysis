@@ -12,6 +12,7 @@ The original product brief is available in [`PROJECT.md`](./PROJECT.md).
 - **Backend:** Node.js, Hono, hexagonal architecture
 - **AI:** OpenAI (4 specialized agents)
 - **Weather:** Open-Meteo (live 7-day forecast)
+- **Map:** MapLibre GL JS
 - **Deploy:** Vercel (static app + serverless API)
 
 ## Architecture
@@ -49,8 +50,7 @@ Agent prompts live in `agents/*.md` (versioned via `agents/manifest.json`).
 ## Setup
 
 ```bash
-cp .env.example .env
-# Replace the placeholder in .env with your own OPENAI_API_KEY
+# Create .env at the repo root (see "Example .env" under Deploy → Environment variables)
 npm install
 npm install --prefix app
 ```
@@ -82,53 +82,17 @@ npm start        # API from backend-dist/
 npm run build --prefix app   # static UI → app/dist/
 ```
 
-## Deploy to Vercel
-
-Single Vercel project: Vue static app + native serverless API routes on the same domain (`/api/*`).
-
-### Prerequisites
-
-1. [Vercel account](https://vercel.com) (GitHub login)
-2. **Vercel Pro recommended** — `/api/analyze` runs 4 LLM agents and often takes 15–30s. Hobby plan timeout is **10s**; Pro allows **60s** (configured in `vercel.json`).
-3. [OpenAI API key](https://platform.openai.com/api-keys)
-4. Repo pushed to GitHub
-
-### Project settings
-
-Import the repo as project **`field-ai-analysis`** with these settings:
-
-| Setting | Value |
-|---------|--------|
-| Root Directory | *(empty — repo root, not `app`)* |
-| Framework Preset | Other |
-| Build / Install / Output | From `vercel.json` |
-
-If Root Directory is set to `app`, the `api/` folder is not deployed and all `/api/*` routes return **404**.
-
 ### Environment variables
 
-In **Project → Settings → Environment Variables**:
+| Variable | Used by | Notes |
+|----------|---------|--------|
+| `OPENAI_API_KEY` | API / CLI / serverless | OpenAI secret. Read via `process.env` on the server only — never from `import.meta.env` in Vue. |
 
-| Variable | Required | Environments |
-|----------|----------|--------------|
-| `OPENAI_API_KEY` | Yes | Production, Preview, Development (server only) |
-| `VITE_OPENAI_MODEL` | No | Defaults to `gpt-4o-mini` |
-| `VITE_MAP_STYLE_URL` | No | Override basemap style (default `/map/field-basemap.json` in `app/public/map/`) |
-| `VITE_MAP_SATELLITE_STYLE_URL` | No | Override satellite style (default `/map/field-satellite.json`) |
-| `APP_URL` | No | e.g. `https://field-ai-analysis.vercel.app` (CORS) |
+#### Example `.env` (local)
 
-Leave `VITE_API_BASE_URL` **empty** when app and API share the same Vercel domain.
-
-**Redeploy after adding or changing env vars** — existing deployments do not pick them up automatically.
-
-Do **not** commit `.env` to git.
-
-### Security
-
-- Keep real credentials in local `.env` files or Vercel Environment Variables.
-- Only placeholders belong in `.env.example` and documentation.
-- Never reference `OPENAI_API_KEY` from `import.meta.env` in the frontend.
-- Rotate a credential immediately if it is accidentally committed or printed.
+```env
+OPENAI_API_KEY=sk-...
+VITE_OPENAI_MODEL=gpt-4o-mini
 
 ### Verify
 

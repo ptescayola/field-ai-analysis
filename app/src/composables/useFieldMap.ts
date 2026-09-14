@@ -4,6 +4,7 @@ import maplibregl, {
   type Map,
   type MapLayerMouseEvent,
   type Popup,
+  type StyleSpecification,
 } from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import {
@@ -38,13 +39,18 @@ import {
   type FieldPopupMetrics,
 } from "../utils/field-map-popup"
 import { boundsForBoundaries } from "../utils/map-bounds"
+import fieldBasemapStyle from "../map/styles/field-basemap.json"
+import fieldSatelliteStyle from "../map/styles/field-satellite.json"
 
-const MAP_STYLE_URL =
-  import.meta.env.VITE_MAP_STYLE_URL?.trim() || "/map/field-basemap.json"
-const SATELLITE_STYLE_URL =
-  import.meta.env.VITE_MAP_SATELLITE_STYLE_URL?.trim() ||
-  "/map/field-satellite.json"
+const BUNDLED_BASEMAP_STYLE = fieldBasemapStyle as StyleSpecification
+const BUNDLED_SATELLITE_STYLE = fieldSatelliteStyle as StyleSpecification
 const REMOTE_MAP_STYLE_FALLBACK = "https://demotiles.maplibre.org/style.json"
+
+type MapStyle = string | StyleSpecification
+
+const ENV_BASEMAP_STYLE_URL = import.meta.env.VITE_MAP_STYLE_URL?.trim()
+const ENV_SATELLITE_STYLE_URL =
+  import.meta.env.VITE_MAP_SATELLITE_STYLE_URL?.trim()
 
 const INITIAL_CENTER: LngLatLike = [-3.7, 40.4]
 const INITIAL_ZOOM = 5
@@ -72,11 +78,11 @@ export function useFieldMap(options: UseFieldMapOptions) {
   const basemapMode = ref<BasemapMode>("standard")
   let usedFallbackStyle = false
 
-  function activeStyleUrl(): string {
+  function activeStyle(): MapStyle {
     if (basemapMode.value === "satellite") {
-      return SATELLITE_STYLE_URL
+      return ENV_SATELLITE_STYLE_URL || BUNDLED_SATELLITE_STYLE
     }
-    return MAP_STYLE_URL
+    return ENV_BASEMAP_STYLE_URL || BUNDLED_BASEMAP_STYLE
   }
 
   function mapFeatures() {
@@ -201,8 +207,6 @@ export function useFieldMap(options: UseFieldMapOptions) {
   function applyStyleFallback(map: Map, message: string): void {
     if (usedFallbackStyle) return
     if (!/style/i.test(message)) return
-    if (activeStyleUrl() === REMOTE_MAP_STYLE_FALLBACK) return
-
     usedFallbackStyle = true
     void map.setStyle(REMOTE_MAP_STYLE_FALLBACK, { diff: false })
   }
@@ -213,7 +217,7 @@ export function useFieldMap(options: UseFieldMapOptions) {
 
     const map = new maplibregl.Map({
       container,
-      style: activeStyleUrl(),
+      style: activeStyle(),
       center: INITIAL_CENTER,
       zoom: INITIAL_ZOOM,
       attributionControl: {},
@@ -238,7 +242,7 @@ export function useFieldMap(options: UseFieldMapOptions) {
     if (mode === basemapMode.value) return
     basemapMode.value = mode
     usedFallbackStyle = false
-    void mapRef.value?.setStyle(activeStyleUrl(), { diff: false })
+    void mapRef.value?.setStyle(activeStyle(), { diff: false })
   }
 
   async function loadFields(): Promise<void> {
