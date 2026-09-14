@@ -18,9 +18,9 @@ import {
 } from "vue"
 import { fetchFieldsGeoJson } from "../api/client"
 import {
-  splitFieldMapFeatures,
+  boundaryFeatures,
   type FieldGeoJsonProperties,
-  type FieldMapFeature,
+  type FieldBoundaryFeature,
   type FieldsFeatureCollection,
 } from "../types/fields-geojson"
 import {
@@ -28,16 +28,12 @@ import {
   FIELD_BOUNDARIES_SOURCE_ID,
   FIELD_MAP_LAYER_IDS,
   FIELD_MAP_SOURCE_IDS,
-  FIELD_POINTS_SOURCE_ID,
   INTERACTIVE_FIELD_LAYER_IDS,
   SELECTED_FIELD_LAYER_IDS,
   selectedFieldFilter,
   type BasemapMode,
 } from "../utils/field-map-layers"
-import {
-  fieldPopupHtml,
-  type FieldPopupMetrics,
-} from "../utils/field-map-popup"
+import { fieldPopupHtml } from "../utils/field-map-popup"
 import { boundsForBoundaries } from "../utils/map-bounds"
 import fieldBasemapStyle from "../map/styles/field-basemap.json"
 import fieldSatelliteStyle from "../map/styles/field-satellite.json"
@@ -63,8 +59,6 @@ const EMPTY_COLLECTION: FieldsFeatureCollection = {
 
 export interface UseFieldMapOptions {
   selectedFile: MaybeRefOrGetter<string>
-  healthScore: MaybeRefOrGetter<number | null>
-  irrigateNext48h: MaybeRefOrGetter<boolean | null>
   onSelectField: (file: string) => void
 }
 
@@ -85,21 +79,14 @@ export function useFieldMap(options: UseFieldMapOptions) {
     return ENV_BASEMAP_STYLE_URL || BUNDLED_BASEMAP_STYLE
   }
 
-  function mapFeatures() {
-    return splitFieldMapFeatures(fieldsGeoJson.value ?? EMPTY_COLLECTION)
-  }
-
-  function popupMetrics(): FieldPopupMetrics {
-    return {
-      healthScore: toValue(options.healthScore),
-      irrigateNext48h: toValue(options.irrigateNext48h),
-    }
+  function mapFeatures(): FieldBoundaryFeature[] {
+    return boundaryFeatures(fieldsGeoJson.value ?? EMPTY_COLLECTION)
   }
 
   function setSourceData(
     map: Map,
     sourceId: string,
-    features: FieldMapFeature[],
+    features: FieldBoundaryFeature[],
   ): void {
     const source = map.getSource(sourceId) as GeoJSONSource | undefined
     source?.setData({ type: "FeatureCollection", features })
@@ -118,20 +105,8 @@ export function useFieldMap(options: UseFieldMapOptions) {
       maxWidth: "260px",
     })
       .setLngLat(lngLat)
-      .setHTML(fieldPopupHtml(properties, popupMetrics()))
+      .setHTML(fieldPopupHtml(properties))
       .addTo(map)
-  }
-
-  function showSelectedFieldPopup(): void {
-    const selectedFile = toValue(options.selectedFile)
-    if (!mapRef.value || !selectedFile) return
-
-    const point = mapFeatures().points.find(
-      (feature) => feature.properties.file === selectedFile,
-    )
-    if (!point) return
-
-    showPopup(point.properties, point.geometry.coordinates)
   }
 
   function onFieldClick(event: MapLayerMouseEvent): void {
@@ -180,9 +155,8 @@ export function useFieldMap(options: UseFieldMapOptions) {
   }
 
   function syncOverlayData(map: Map): void {
-    const { boundaries, points } = mapFeatures()
+    const boundaries = mapFeatures()
     setSourceData(map, FIELD_BOUNDARIES_SOURCE_ID, boundaries)
-    setSourceData(map, FIELD_POINTS_SOURCE_ID, points)
 
     const filter = selectedFieldFilter(toValue(options.selectedFile))
     for (const layerId of SELECTED_FIELD_LAYER_IDS) {
@@ -191,7 +165,7 @@ export function useFieldMap(options: UseFieldMapOptions) {
   }
 
   function frameSelection(map: Map): void {
-    const { boundaries } = mapFeatures()
+    const boundaries = mapFeatures()
     const selectedFile = toValue(options.selectedFile)
     const selected = boundaries.filter(
       (feature) => feature.properties.file === selectedFile,
@@ -273,15 +247,6 @@ export function useFieldMap(options: UseFieldMapOptions) {
     },
   )
 
-  watch(
-    () =>
-      [toValue(options.healthScore), toValue(options.irrigateNext48h)] as const,
-    ([healthScore, irrigateNext48h]) => {
-      if (healthScore == null && irrigateNext48h == null) return
-      showSelectedFieldPopup()
-    },
-  )
-
   onBeforeUnmount(() => {
     popupRef.value?.remove()
     popupRef.value = null
@@ -294,7 +259,6 @@ export function useFieldMap(options: UseFieldMapOptions) {
     loading,
     loadError,
     basemapMode,
-    satelliteAvailable: true,
     setBasemapMode,
   }
 }

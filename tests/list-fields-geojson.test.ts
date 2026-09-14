@@ -42,23 +42,15 @@ const repository: FieldRepository = {
   },
 }
 
-it("listFieldsGeoJson returns a boundary and a point per field", async () => {
+it("listFieldsGeoJson returns a boundary per field", async () => {
   const useCase = new ListFieldsGeoJsonUseCase(repository)
   const geojson = await useCase.execute()
 
   assert.equal(geojson.type, "FeatureCollection")
-  assert.equal(geojson.features.length, 2)
+  assert.equal(geojson.features.length, 1)
 
-  const boundary = geojson.features.find(
-    (feature) => feature.geometry.type === "Polygon",
-  )
-  const point = geojson.features.find(
-    (feature) => feature.geometry.type === "Point",
-  )
-
-  assert.ok(boundary)
-  assert.ok(point)
-  assert.deepEqual(point.geometry.coordinates, [-8.81, 42.51])
+  const boundary = geojson.features[0]
+  assert.equal(boundary.geometry.type, "Polygon")
   assert.equal(boundary.properties.file, "field-001.json")
   assert.equal(boundary.properties.boundary_source, "estimated")
 })

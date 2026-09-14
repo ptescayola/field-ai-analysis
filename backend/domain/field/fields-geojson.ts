@@ -12,15 +12,6 @@ export interface FieldGeoJsonProperties {
   boundary_source: "defined" | "estimated"
 }
 
-export interface FieldPointFeature {
-  type: "Feature"
-  geometry: {
-    type: "Point"
-    coordinates: [number, number]
-  }
-  properties: FieldGeoJsonProperties
-}
-
 export interface FieldBoundaryFeature {
   type: "Feature"
   geometry: {
@@ -30,7 +21,7 @@ export interface FieldBoundaryFeature {
   properties: FieldGeoJsonProperties
 }
 
-export type FieldMapFeature = FieldPointFeature | FieldBoundaryFeature
+export type FieldMapFeature = FieldBoundaryFeature
 
 export interface FieldsFeatureCollection {
   type: "FeatureCollection"
@@ -64,25 +55,9 @@ function fieldToBoundaryFeature(
   }
 }
 
-function fieldToPointFeature(
-  file: string,
-  field: FieldData,
-): FieldPointFeature {
-  const { location } = field.field
-  return {
-    type: "Feature",
-    geometry: {
-      type: "Point",
-      coordinates: [location.lng, location.lat],
-    },
-    properties: baseProperties(file, field),
-  }
-}
-
-/** Parcel shape plus its centroid: the polygon carries the map, the point anchors labels and popups. */
 export function fieldToMapFeatures(
   file: string,
   field: FieldData,
 ): FieldMapFeature[] {
-  return [fieldToBoundaryFeature(file, field), fieldToPointFeature(file, field)]
+  return [fieldToBoundaryFeature(file, field)]
 }

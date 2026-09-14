@@ -10,15 +10,6 @@ export interface FieldGeoJsonProperties {
   boundary_source: "defined" | "estimated"
 }
 
-export interface FieldPointFeature {
-  type: "Feature"
-  geometry: {
-    type: "Point"
-    coordinates: [number, number]
-  }
-  properties: FieldGeoJsonProperties
-}
-
 export interface FieldBoundaryFeature {
   type: "Feature"
   geometry: {
@@ -28,33 +19,15 @@ export interface FieldBoundaryFeature {
   properties: FieldGeoJsonProperties
 }
 
-export type FieldMapFeature = FieldPointFeature | FieldBoundaryFeature
+export type FieldMapFeature = FieldBoundaryFeature
 
 export interface FieldsFeatureCollection {
   type: "FeatureCollection"
   features: FieldMapFeature[]
 }
 
-function isBoundaryFeature(
-  feature: FieldMapFeature,
-): feature is FieldBoundaryFeature {
-  return feature.geometry.type === "Polygon"
-}
-
-export function splitFieldMapFeatures(collection: FieldsFeatureCollection): {
-  boundaries: FieldBoundaryFeature[]
-  points: FieldPointFeature[]
-} {
-  const boundaries: FieldBoundaryFeature[] = []
-  const points: FieldPointFeature[] = []
-
-  for (const feature of collection.features) {
-    if (isBoundaryFeature(feature)) {
-      boundaries.push(feature)
-    } else {
-      points.push(feature)
-    }
-  }
-
-  return { boundaries, points }
+export function boundaryFeatures(
+  collection: FieldsFeatureCollection,
+): FieldBoundaryFeature[] {
+  return collection.features
 }

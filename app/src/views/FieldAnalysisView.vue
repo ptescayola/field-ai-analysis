@@ -77,6 +77,15 @@ async function runAnalysis(): Promise<void> {
     <EmptyState v-if="loadingFields" message="Loading fields…" />
 
     <template v-else>
+
+      <AnalysisLoadingState
+        v-if="analyzing"
+        message="Running agents (Data Analyst, Risk Analyst, Agronomist, Coordinator)…"
+        hint="This may take 10-20 seconds"
+      />
+
+      <AnalysisView v-else-if="result" :result="result" :field="fieldData" />
+    
       <EmptyState
         v-if="fields.length === 0"
         message="No fields are available."
@@ -84,31 +93,14 @@ async function runAnalysis(): Promise<void> {
 
       <FieldMapView
         v-if="fields.length > 0"
-        class="field-map-wrap"
         :selected-file="selectedFile"
-        :health-score="result?.analysis.field_health_score ?? null"
-        :irrigate-next48h="
-          result?.analysis.irrigation.should_irrigate_next_48h ?? null
-        "
         @select-field="onFieldSelected"
       />
 
-      <AnalysisLoadingState
-        v-if="analyzing"
-        message="Running agents (Data Analyst, Risk Analyst, Agronomist, Coordinator)…"
-        hint="This may take 10–20 seconds"
-      />
 
-      <AnalysisView v-else-if="result" :result="result" :field="fieldData" />
 
       <EmptyState v-if="loadingField" message="Loading field data…" />
       <FieldPanel v-else-if="fieldData" :field="fieldData" />
     </template>
   </AppLayout>
 </template>
-
-<style scoped>
-.field-map-wrap {
-  margin-bottom: 1rem;
-}
-</style>

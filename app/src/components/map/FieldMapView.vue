@@ -5,14 +5,10 @@ const props = withDefaults(
   defineProps<{
     selectedFile?: string
     title?: string
-    healthScore?: number | null
-    irrigateNext48h?: boolean | null
   }>(),
   {
     selectedFile: "",
     title: "Field map",
-    healthScore: null,
-    irrigateNext48h: null,
   },
 )
 
@@ -25,12 +21,9 @@ const {
   loading,
   loadError,
   basemapMode,
-  satelliteAvailable,
   setBasemapMode,
 } = useFieldMap({
   selectedFile: () => props.selectedFile,
-  healthScore: () => props.healthScore,
-  irrigateNext48h: () => props.irrigateNext48h,
   onSelectField: (file) => emit("select-field", file),
 })
 </script>
@@ -49,7 +42,6 @@ const {
 
     <div class="field-map-canvas-wrap">
       <div
-        v-if="satelliteAvailable"
         class="field-map-basemap"
         role="group"
         aria-label="Basemap"
