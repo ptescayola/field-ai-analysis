@@ -2,6 +2,10 @@
 import { onBeforeUnmount, ref } from "vue"
 import type { SelectedImage } from "../types"
 import { parseCoordinatesFromFilename } from "../utils/coordinates-from-filename"
+import {
+  exampleImageUrl,
+  IMAGE_ANALYSIS_EXAMPLES,
+} from "../constants/image-analysis-examples"
 import WeatherForecastPanel from "./WeatherForecastPanel.vue"
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024
@@ -138,6 +142,20 @@ onBeforeUnmount(() => {
           weather is fetched for those coordinates, and the full pipeline
           produces an irrigation recommendation.
         </p>
+        <p class="example-downloads">
+          <span class="example-downloads-label">Example images:</span>
+          <span class="example-downloads-links">
+            <a
+              v-for="example in IMAGE_ANALYSIS_EXAMPLES"
+              :key="example.fileName"
+              class="example-download-link"
+              :href="exampleImageUrl(example.fileName)"
+              :download="example.fileName"
+            >
+              {{ example.label }}
+            </a>
+          </span>
+        </p>
       </div>
     </div>
 
@@ -239,6 +257,35 @@ h2 {
   background: var(--surface-muted);
   padding: 0.1rem 0.35rem;
   border-radius: 4px;
+}
+
+.example-downloads {
+  margin: 0.65rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.example-downloads-label {
+  font-weight: 600;
+  color: var(--text);
+  margin-right: 0.35rem;
+}
+
+.example-downloads-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.65rem;
+}
+
+.example-download-link {
+  color: var(--green);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.example-download-link:hover {
+  text-decoration: underline;
 }
 
 .dropzone {
