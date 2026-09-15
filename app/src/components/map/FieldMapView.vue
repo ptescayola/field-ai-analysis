@@ -80,7 +80,6 @@ const {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1rem 1.25rem 1.1rem;
-  box-shadow: var(--shadow);
 }
 
 .field-map-head {

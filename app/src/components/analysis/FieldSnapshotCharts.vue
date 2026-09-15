@@ -212,7 +212,6 @@ const keyMetrics = computed(() => [
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.1rem 1.25rem;
-  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   gap: 0.85rem;

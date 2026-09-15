@@ -32,10 +32,7 @@ async function runImageAnalysis(image: SelectedImage): Promise<void> {
 </script>
 
 <template>
-  <AppLayout
-    eyebrow="Experimental image analysis with vision agents"
-    experimental
-  >
+  <AppLayout>
     <ErrorAlert v-if="analysisError" :message="analysisError" />
 
     <AnalysisLoadingState

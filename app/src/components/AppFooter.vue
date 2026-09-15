@@ -11,6 +11,14 @@
       >
         LinkedIn
       </a>
+      <span aria-hidden="true">·</span>
+      <a
+        href="https://github.com/ptescayola/field-ai-analysis"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        GitHub
+      </a>
     </p>
   </footer>
 </template>

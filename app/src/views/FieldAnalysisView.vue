@@ -3,13 +3,11 @@ import { ref } from "vue"
 import { analyzeField } from "../api/client"
 import AnalysisLoadingState from "../components/AnalysisLoadingState.vue"
 import AnalysisView from "../components/AnalysisView.vue"
-import AnalyzeButton from "../components/AnalyzeButton.vue"
 import EmptyState from "../components/EmptyState.vue"
 import ErrorAlert from "../components/ErrorAlert.vue"
 import FieldMapView from "../components/map/FieldMapView.vue"
 import FieldPanel from "../components/FieldPanel.vue"
-import FieldSelector from "../components/FieldSelector.vue"
-import HeaderActions from "../components/HeaderActions.vue"
+import FieldWorkflowBar from "../components/FieldWorkflowBar.vue"
 import { useFields } from "../composables/useFields"
 import AppLayout from "../layouts/AppLayout.vue"
 import type { PipelineResult } from "../types"
@@ -51,33 +49,25 @@ async function runAnalysis(): Promise<void> {
 </script>
 
 <template>
-  <AppLayout eyebrow="Field analysis with specialized agents">
-    <template #actions>
-      <HeaderActions>
-        <FieldSelector
-          :fields="fields"
-          :model-value="selectedFile"
-          :disabled="loadingFields || analyzing"
-          @update:model-value="onFieldSelected"
-        />
-        <AnalyzeButton
-          label="Analyze field"
-          :disabled="!selectedFile || loadingField"
-          :loading="analyzing"
-          @click="runAnalysis"
-        />
-      </HeaderActions>
-    </template>
-
+  <AppLayout>
     <ErrorAlert
       v-if="fieldsError || analysisError"
       :message="(analysisError ?? fieldsError)!"
     />
 
+    <FieldWorkflowBar
+      :fields="fields"
+      :selected-file="selectedFile"
+      :loading-fields="loadingFields"
+      :loading-field="loadingField"
+      :analyzing="analyzing"
+      @select-field="onFieldSelected"
+      @analyze="runAnalysis"
+    />
+
     <EmptyState v-if="loadingFields" message="Loading fields…" />
 
     <template v-else>
-
       <AnalysisLoadingState
         v-if="analyzing"
         message="Running agents (Data Analyst, Risk Analyst, Agronomist, Coordinator)…"
@@ -85,7 +75,7 @@ async function runAnalysis(): Promise<void> {
       />
 
       <AnalysisView v-else-if="result" :result="result" :field="fieldData" />
-    
+
       <EmptyState
         v-if="fields.length === 0"
         message="No fields are available."
@@ -96,8 +86,6 @@ async function runAnalysis(): Promise<void> {
         :selected-file="selectedFile"
         @select-field="onFieldSelected"
       />
-
-
 
       <EmptyState v-if="loadingField" message="Loading field data…" />
       <FieldPanel v-else-if="fieldData" :field="fieldData" />

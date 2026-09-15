@@ -9,13 +9,11 @@ export const router = createRouter({
       path: "/",
       name: "field-analysis",
       component: FieldAnalysisView,
-      meta: { title: "Field analysis" },
     },
     {
       path: "/image",
       name: "image-analysis",
       component: ImageAnalysisView,
-      meta: { title: "Image analysis", experimental: true },
     },
   ],
 })

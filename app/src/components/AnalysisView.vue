@@ -384,7 +384,6 @@ function formatVegetationType(type: string): string {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 0.85rem 1rem;
-  box-shadow: var(--shadow);
 }
 
 .hero {
@@ -500,7 +499,6 @@ function formatVegetationType(type: string): string {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.25rem 1.5rem;
-  box-shadow: var(--shadow);
 }
 
 .card h2 {

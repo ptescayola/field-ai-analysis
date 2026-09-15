@@ -90,7 +90,6 @@ function formatCropName(value: string): string {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.25rem 1.5rem;
-  box-shadow: var(--shadow);
 }
 
 h2 {

@@ -12,8 +12,9 @@
   --amber-pale: #fff3cd;
   --red: #bc4749;
   --red-pale: #fde8e8;
-  --shadow: 0 1px 3px rgb(26 46 26 / 8%), 0 8px 24px rgb(26 46 26 / 6%);
   --radius: 12px;
+  --app-header-offset: 3.75rem;
+  --main-block-padding-top: 1.5rem;
   --font: "DM Sans", system-ui, sans-serif;
   --font-display: "DM Serif Display", Georgia, serif;
 }
