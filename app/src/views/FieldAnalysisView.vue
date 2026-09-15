@@ -35,6 +35,7 @@ async function onFieldSelected(file: string): Promise<void> {
 
 async function runAnalysis(): Promise<void> {
   if (!selectedFile.value) return
+  window.scrollTo({ top: 0, behavior: "smooth" })
   analyzing.value = true
   analysisError.value = null
   result.value = null

@@ -645,13 +645,13 @@ function formatVegetationType(type: string): string {
 }
 
 .tone-low {
-  background: #e8f0ff;
-  color: #3d5a80;
+  background: var(--chart-secondary-pale);
+  color: var(--chart-secondary);
 }
 
 .tone-high {
   background: var(--amber-pale);
-  color: #b08900;
+  color: var(--amber-deep);
 }
 
 .agent li {

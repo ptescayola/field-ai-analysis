@@ -134,7 +134,7 @@ const SEVERITY_FILL: Record<Risk["severity"], number> = {
 .risk-meter-track {
   height: 0.35rem;
   border-radius: 999px;
-  background: var(--border);
+  background: var(--chart-track);
   overflow: hidden;
 }
 
@@ -156,7 +156,7 @@ const SEVERITY_FILL: Record<Risk["severity"], number> = {
 }
 
 .risk-meter-fill--confidence {
-  background: #3d5a80;
+  background: var(--chart-secondary);
 }
 
 .risk-meter-evidence {

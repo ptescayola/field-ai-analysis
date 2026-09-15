@@ -85,7 +85,7 @@ const centerText = computed(() => {
 
 .score-ring-track {
   fill: none;
-  stroke: var(--border);
+  stroke: var(--chart-track);
   stroke-width: 7;
 }
 
@@ -97,11 +97,11 @@ const centerText = computed(() => {
 }
 
 .score-ring--neutral .score-ring-fill {
-  stroke: var(--green);
+  stroke: var(--chart-vegetation);
 }
 
 .score-ring--low .score-ring-fill {
-  stroke: #3d5a80;
+  stroke: var(--chart-secondary);
 }
 
 .score-ring--high .score-ring-fill {
@@ -117,7 +117,7 @@ const centerText = computed(() => {
 }
 
 .score-ring-value {
-  font-size: 1.05rem;
+  font-size: 0.9rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1.1;

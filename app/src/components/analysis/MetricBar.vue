@@ -47,7 +47,7 @@ defineProps<{
 .metric-bar-track {
   height: 0.45rem;
   border-radius: 999px;
-  background: var(--border);
+  background: var(--chart-track);
   overflow: hidden;
 }
 
@@ -58,11 +58,11 @@ defineProps<{
 }
 
 .metric-bar--neutral .metric-bar-fill {
-  background: var(--green);
+  background: var(--chart-vegetation);
 }
 
 .metric-bar--low .metric-bar-fill {
-  background: #3d5a80;
+  background: var(--chart-secondary);
 }
 
 .metric-bar--high .metric-bar-fill {

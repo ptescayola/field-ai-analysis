@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import WeatherIcon from "./WeatherIcon.vue"
+import { formatForecastDay } from "../utils/intl-dates"
 import { getWeatherDescription } from "../utils/wmo-weather"
 import type { WeatherForecast } from "../types"
 
@@ -9,14 +10,6 @@ defineProps<{
   error: string | null
   title?: string
 }>()
-
-function formatDate(date: string): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  }).format(new Date(`${date}T12:00:00`))
-}
 
 function formatRain(mm: number): string {
   if (mm === 0) return "0 mm"
@@ -40,7 +33,7 @@ function formatRain(mm: number): string {
         class="forecast-day"
         :title="getWeatherDescription(day.weather_code)"
       >
-        <span class="forecast-date">{{ formatDate(day.date) }}</span>
+        <span class="forecast-date">{{ formatForecastDay(day.date) }}</span>
         <WeatherIcon :weather-code="day.weather_code" size="md" />
         <span class="forecast-stats">
           <span class="forecast-rain">{{ formatRain(day.rain_mm) }}</span>
@@ -118,7 +111,7 @@ h3 {
 }
 
 .forecast-rain {
-  color: #3b82c4;
+  color: var(--chart-water-deep);
   font-weight: 500;
 }
 

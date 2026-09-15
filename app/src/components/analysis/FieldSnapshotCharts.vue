@@ -2,6 +2,7 @@
 import { computed } from "vue"
 import { useWeatherForecast } from "../../composables/useWeatherForecast"
 import type { FieldData } from "../../types"
+import SoilMetricGauge from "./SoilMetricGauge.vue"
 
 const props = defineProps<{
   field: FieldData
@@ -15,6 +16,18 @@ const { rainNext7Days } = useWeatherForecast(latitude, longitude)
 const ndviDelta = computed(
   () => props.field.vegetation.ndvi - props.field.vegetation.ndvi_previous_week,
 )
+
+const ndviTrendNote = computed(() => {
+  const delta = ndviDelta.value
+  const abs = Math.abs(delta)
+  if (abs < 0.02) {
+    return "Canopy greenness is steady compared with last week."
+  }
+  if (delta > 0) {
+    return "Greener than last week—more leaf cover or biomass."
+  }
+  return "Slightly less green than last week—watch for stress or crop stage changes."
+})
 
 const rain7dMm = computed(
   () => rainNext7Days.value ?? props.field.weather.rain_last_7_days_mm,
@@ -99,11 +112,18 @@ const keyMetrics = computed(() => [
     </div>
 
     <div class="snapshot-grid">
-      <div class="snapshot-card">
-        <span class="snapshot-label">NDVI trend</span>
+      <div class="snapshot-card snapshot-card--ndvi">
+        <div class="ndvi-card-head">
+          <span class="snapshot-label">NDVI trend</span>
+          <p class="ndvi-info">
+            Normalized Difference Vegetation Index (0–1) from satellite
+            imagery. Higher values mean denser green vegetation; bars show
+            last week vs now.
+          </p>
+        </div>
         <div class="ndvi-compare">
           <div class="ndvi-bar-wrap">
-            <span class="ndvi-bar-label">Prev</span>
+            <span class="ndvi-bar-label" title="Previous week">Prev</span>
             <div class="ndvi-track">
               <div
                 class="ndvi-fill ndvi-fill--prev"
@@ -117,7 +137,7 @@ const keyMetrics = computed(() => [
             }}</span>
           </div>
           <div class="ndvi-bar-wrap">
-            <span class="ndvi-bar-label">Now</span>
+            <span class="ndvi-bar-label" title="Current reading">Now</span>
             <div class="ndvi-track">
               <div
                 class="ndvi-fill ndvi-fill--now"
@@ -129,77 +149,33 @@ const keyMetrics = computed(() => [
             }}</span>
           </div>
         </div>
-        <span
-          class="ndvi-delta"
-          :class="ndviDelta >= 0 ? 'ndvi-delta--up' : 'ndvi-delta--down'"
-        >
-          {{ ndviDelta >= 0 ? "+" : "" }}{{ ndviDelta.toFixed(2) }} vs last week
-        </span>
+        <div class="ndvi-foot">
+          <span
+            class="ndvi-delta"
+            :class="ndviDelta >= 0 ? 'ndvi-delta--up' : 'ndvi-delta--down'"
+          >
+            {{ ndviDelta >= 0 ? "+" : "" }}{{ ndviDelta.toFixed(2) }} vs last
+            week
+          </span>
+          <p class="ndvi-trend-note">{{ ndviTrendNote }}</p>
+        </div>
       </div>
 
       <div class="snapshot-card snapshot-card--soil">
         <span class="snapshot-label">Soil</span>
         <div class="soil-metrics">
-          <div class="soil-metric">
-            <div class="soil-metric-label-row">
-              <svg
-                class="soil-icon soil-icon--moisture"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  d="M12 2.5c-3.2 4.5-6 8.2-6 11.8a6 6 0 1 0 12 0c0-3.6-2.8-7.3-6-11.8z"
-                  fill="currentColor"
-                />
-              </svg>
-              <span class="soil-metric-label">Moisture</span>
-            </div>
-            <div class="soil-gauge">
-              <div
-                class="soil-gauge-fill soil-gauge-fill--moisture"
-                :style="{ height: `${field.soil.moisture_percent}%` }"
-              />
-            </div>
-            <strong class="soil-value"
-              >{{ field.soil.moisture_percent }}%</strong
-            >
-          </div>
-          <div class="soil-metric">
-            <div class="soil-metric-label-row">
-              <svg
-                class="soil-icon soil-icon--temp"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  d="M14 14.5V6a2 2 0 1 0-4 0v8.5a4 4 0 1 0 4 0z"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.75"
-                  stroke-linejoin="round"
-                />
-                <line
-                  x1="12"
-                  y1="3"
-                  x2="12"
-                  y2="5"
-                  stroke="currentColor"
-                  stroke-width="1.75"
-                  stroke-linecap="round"
-                />
-              </svg>
-              <span class="soil-metric-label">Temp</span>
-            </div>
-            <div class="soil-gauge">
-              <div
-                class="soil-gauge-fill soil-gauge-fill--temp"
-                :style="{
-                  height: `${clampPct(field.soil.temperature_c, 35)}%`,
-                }"
-              />
-            </div>
-            <strong class="soil-value">{{ field.soil.temperature_c }}°C</strong>
-          </div>
+          <SoilMetricGauge
+            kind="moisture"
+            label="Moisture"
+            :display-value="`${field.soil.moisture_percent}%`"
+            :fill-percent="field.soil.moisture_percent"
+          />
+          <SoilMetricGauge
+            kind="temperature"
+            label="Temp"
+            :display-value="`${field.soil.temperature_c}°C`"
+            :fill-percent="clampPct(field.soil.temperature_c, 35)"
+          />
         </div>
       </div>
     </div>
@@ -291,7 +267,7 @@ const keyMetrics = computed(() => [
 .key-metric-track {
   height: 0.35rem;
   border-radius: 999px;
-  background: var(--border);
+  background: var(--chart-track);
   overflow: hidden;
 }
 
@@ -301,19 +277,19 @@ const keyMetrics = computed(() => [
 }
 
 .key-metric-fill--temp {
-  background: #e07a5f;
+  background: var(--chart-temp);
 }
 
 .key-metric-fill--humidity {
-  background: #3b82c4;
+  background: var(--chart-water);
 }
 
 .key-metric-fill--rain {
-  background: #2563eb;
+  background: var(--chart-water-deep);
 }
 
 .key-metric-fill--ph {
-  background: #8b5e3c;
+  background: var(--chart-soil);
 }
 
 .key-metric-sub {
@@ -330,7 +306,7 @@ const keyMetrics = computed(() => [
 
 .snapshot-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.85rem;
 }
 
@@ -347,6 +323,25 @@ const keyMetrics = computed(() => [
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
+}
+
+.snapshot-card--soil {
+  width: max-content;
+  max-width: 100%;
+  justify-self: end;
+}
+
+.ndvi-card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ndvi-info {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--text-muted);
 }
 
 .ndvi-compare {
@@ -370,7 +365,7 @@ const keyMetrics = computed(() => [
 .ndvi-track {
   height: 0.5rem;
   border-radius: 999px;
-  background: var(--border);
+  background: var(--chart-track);
   overflow: hidden;
 }
 
@@ -380,11 +375,11 @@ const keyMetrics = computed(() => [
 }
 
 .ndvi-fill--prev {
-  background: #94a3b8;
+  background: var(--chart-vegetation-muted);
 }
 
 .ndvi-fill--now {
-  background: var(--green);
+  background: var(--chart-vegetation);
 }
 
 .ndvi-value {
@@ -393,9 +388,22 @@ const keyMetrics = computed(() => [
   text-align: right;
 }
 
+.ndvi-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .ndvi-delta {
   font-size: 0.75rem;
   font-weight: 600;
+}
+
+.ndvi-trend-note {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--text-muted);
 }
 
 .ndvi-delta--up {
@@ -407,77 +415,15 @@ const keyMetrics = computed(() => [
 }
 
 .soil-metrics {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-  align-items: start;
-}
-
-.soil-metric {
-  display: grid;
-  grid-template-rows: auto 4rem auto;
-  justify-items: center;
-  gap: 0.45rem;
-}
-
-.soil-metric-label-row {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  min-height: 1.1rem;
-  width: 100%;
-}
-
-.soil-metric-label {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-}
-
-.soil-icon {
-  width: 1rem;
-  height: 1rem;
-  flex-shrink: 0;
-}
-
-.soil-icon--moisture {
-  color: #3b82c4;
-}
-
-.soil-icon--temp {
-  color: #e07a5f;
-}
-
-.soil-gauge {
-  width: 2.75rem;
-  height: 4rem;
-  border-radius: 6px;
-  background: var(--border);
-  display: flex;
+  gap: 1.5rem;
   align-items: flex-end;
-  overflow: hidden;
 }
 
-.soil-gauge-fill {
-  width: 100%;
-  border-radius: 0 0 6px 6px;
-  min-height: 4%;
-  transition: height 0.35s ease;
-}
-
-.soil-gauge-fill--moisture {
-  background: linear-gradient(to top, #3d5a80, #5b8fd4);
-}
-
-.soil-gauge-fill--temp {
-  background: linear-gradient(to top, #c45c3e, #e07a5f);
-}
-
-.soil-value {
-  font-size: 0.95rem;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
-  min-height: 1.15rem;
-  text-align: center;
+@media (max-width: 560px) {
+  .snapshot-card--soil {
+    width: auto;
+    justify-self: stretch;
+  }
 }
 </style>
