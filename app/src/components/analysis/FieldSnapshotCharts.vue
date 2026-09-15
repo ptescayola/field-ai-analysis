@@ -2,8 +2,6 @@
 import { computed } from "vue"
 import { useWeatherForecast } from "../../composables/useWeatherForecast"
 import type { FieldData } from "../../types"
-import SoilMetricGauge from "./SoilMetricGauge.vue"
-
 const props = defineProps<{
   field: FieldData
 }>()
@@ -11,7 +9,10 @@ const props = defineProps<{
 const latitude = computed(() => props.field.field.location.lat)
 const longitude = computed(() => props.field.field.location.lng)
 
-const { rainNext7Days } = useWeatherForecast(latitude, longitude)
+const { rainNext7Days, maxTempNext7Days } = useWeatherForecast(
+  latitude,
+  longitude,
+)
 
 const ndviDelta = computed(
   () => props.field.vegetation.ndvi - props.field.vegetation.ndvi_previous_week,
@@ -29,11 +30,7 @@ const ndviTrendNote = computed(() => {
   return "Slightly less green than last week—watch for stress or crop stage changes."
 })
 
-const rain7dMm = computed(
-  () => rainNext7Days.value ?? props.field.weather.rain_last_7_days_mm,
-)
-
-const rain7dIsLive = computed(() => rainNext7Days.value !== null)
+const rainLast7dMm = computed(() => props.field.weather.rain_last_7_days_mm)
 
 function formatLabel(value: string): string {
   return value.replaceAll("_", " ")
@@ -43,37 +40,72 @@ function clampPct(value: number, max: number): number {
   return Math.min(100, Math.max(0, (value / max) * 100))
 }
 
-function phFillPct(ph: number): number {
-  return clampPct(ph - 4, 6)
+function soilMoistureStatus(percent: number): string {
+  if (percent < 25) return "Dry — consider irrigation"
+  if (percent < 45) return "Moderate moisture"
+  if (percent <= 75) return "Adequate for most crops"
+  return "High — watch drainage"
 }
 
-const keyMetrics = computed(() => [
-  {
-    label: "Air temp",
-    value: `${props.field.weather.temperature_c}°C`,
-    fillPct: clampPct(props.field.weather.temperature_c, 40),
-    tone: "temp",
-  },
-  {
-    label: "Humidity",
-    value: `${props.field.weather.humidity_percent}%`,
-    fillPct: props.field.weather.humidity_percent,
-    tone: "humidity",
-  },
-  {
-    label: "Rain (7d)",
-    value: `${rain7dMm.value} mm`,
-    fillPct: clampPct(rain7dMm.value, 80),
-    tone: "rain",
-    sub: rain7dIsLive.value ? "live forecast" : "field snapshot",
-  },
-  {
-    label: "Soil pH",
-    value: String(props.field.soil.ph),
-    fillPct: phFillPct(props.field.soil.ph),
-    tone: "ph",
-  },
-])
+const ndviDeltaLabel = computed(() => {
+  const d = ndviDelta.value
+  const sign = d >= 0 ? "+" : ""
+  return `${sign}${d.toFixed(2)} vs last week`
+})
+
+const keyMetrics = computed(() => {
+  const rainNext =
+    rainNext7Days.value ?? props.field.weather.rain_last_7_days_mm
+  const rainSub =
+    rainNext7Days.value !== null
+      ? `Last 7d: ${rainLast7dMm.value} mm · live forecast`
+      : "Last 7d · field snapshot"
+
+  const heatValue =
+    maxTempNext7Days.value !== null
+      ? `${maxTempNext7Days.value}°C`
+      : `${props.field.weather.temperature_c}°C`
+  const heatSub =
+    maxTempNext7Days.value !== null
+      ? `Peak next 7d · air now ${props.field.weather.temperature_c}°C`
+      : `Air snapshot · soil ${props.field.soil.temperature_c}°C`
+
+  return [
+    {
+      label: "Soil moisture",
+      value: `${props.field.soil.moisture_percent}%`,
+      fillPct: props.field.soil.moisture_percent,
+      tone: "moisture",
+      sub: soilMoistureStatus(props.field.soil.moisture_percent),
+    },
+    {
+      label:
+        rainNext7Days.value !== null ? "Rain next 7d" : "Rain last 7d",
+      value: `${rainNext} mm`,
+      fillPct: clampPct(rainNext, 80),
+      tone: "rain",
+      sub: rainSub,
+    },
+    {
+      label: "NDVI",
+      value: props.field.vegetation.ndvi.toFixed(2),
+      fillPct: clampPct(props.field.vegetation.ndvi, 1),
+      tone: "vegetation",
+      sub: ndviDeltaLabel.value,
+      subTone: ndviDelta.value >= 0 ? "up" : "down",
+    },
+    {
+      label: "Heat",
+      value: heatValue,
+      fillPct: clampPct(
+        maxTempNext7Days.value ?? props.field.weather.temperature_c,
+        40,
+      ),
+      tone: "temp",
+      sub: heatSub,
+    },
+  ]
+})
 </script>
 
 <template>
@@ -90,6 +122,7 @@ const keyMetrics = computed(() => [
       <div class="snapshot-chips">
         <span class="chip">{{ formatLabel(field.crop.type) }}</span>
         <span class="chip">{{ formatLabel(field.soil.type) }}</span>
+        <span class="chip">pH {{ field.soil.ph }}</span>
         <span class="chip">{{ field.field.id }}</span>
       </div>
     </header>
@@ -107,7 +140,17 @@ const keyMetrics = computed(() => [
             :style="{ width: `${metric.fillPct}%` }"
           />
         </div>
-        <span v-if="metric.sub" class="key-metric-sub">{{ metric.sub }}</span>
+        <span
+          v-if="metric.sub"
+          class="key-metric-sub"
+          :class="
+            metric.subTone
+              ? `key-metric-sub--${metric.subTone}`
+              : undefined
+          "
+        >
+          {{ metric.sub }}
+        </span>
       </div>
     </div>
 
@@ -161,22 +204,26 @@ const keyMetrics = computed(() => [
         </div>
       </div>
 
-      <div class="snapshot-card snapshot-card--soil">
-        <span class="snapshot-label">Soil</span>
-        <div class="soil-metrics">
-          <SoilMetricGauge
-            kind="moisture"
-            label="Moisture"
-            :display-value="`${field.soil.moisture_percent}%`"
-            :fill-percent="field.soil.moisture_percent"
-          />
-          <SoilMetricGauge
-            kind="temperature"
-            label="Temp"
-            :display-value="`${field.soil.temperature_c}°C`"
-            :fill-percent="clampPct(field.soil.temperature_c, 35)"
-          />
-        </div>
+      <div class="snapshot-card snapshot-card--context">
+        <span class="snapshot-label">Context</span>
+        <p class="context-lead">
+          Slower-moving or secondary signals for disease pressure and soil
+          chemistry.
+        </p>
+        <dl class="context-metrics">
+          <div class="context-metric">
+            <dt>Soil temp</dt>
+            <dd>{{ field.soil.temperature_c }}°C</dd>
+          </div>
+          <div class="context-metric">
+            <dt>Air humidity</dt>
+            <dd>{{ field.weather.humidity_percent }}%</dd>
+          </div>
+          <div class="context-metric">
+            <dt>Soil pH</dt>
+            <dd>{{ field.soil.ph }}</dd>
+          </div>
+        </dl>
       </div>
     </div>
   </section>
@@ -280,7 +327,7 @@ const keyMetrics = computed(() => [
   background: var(--chart-temp);
 }
 
-.key-metric-fill--humidity {
+.key-metric-fill--moisture {
   background: var(--chart-water);
 }
 
@@ -288,13 +335,24 @@ const keyMetrics = computed(() => [
   background: var(--chart-water-deep);
 }
 
-.key-metric-fill--ph {
-  background: var(--chart-soil);
+.key-metric-fill--vegetation {
+  background: var(--chart-vegetation);
 }
 
 .key-metric-sub {
   font-size: 0.62rem;
   color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.key-metric-sub--up {
+  color: var(--green);
+  font-weight: 600;
+}
+
+.key-metric-sub--down {
+  color: var(--red);
+  font-weight: 600;
 }
 
 .snapshot-label {
@@ -325,7 +383,7 @@ const keyMetrics = computed(() => [
   gap: 0.45rem;
 }
 
-.snapshot-card--soil {
+.snapshot-card--context {
   width: max-content;
   max-width: 100%;
   justify-self: end;
@@ -414,14 +472,42 @@ const keyMetrics = computed(() => [
   color: var(--red);
 }
 
-.soil-metrics {
+.context-lead {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.context-metrics {
+  margin: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.context-metric {
   display: flex;
-  gap: 1.5rem;
-  align-items: flex-end;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.context-metric dt {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.context-metric dd {
+  margin: 0;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
 }
 
 @media (max-width: 560px) {
-  .snapshot-card--soil {
+  .snapshot-card--context {
     width: auto;
     justify-self: stretch;
   }

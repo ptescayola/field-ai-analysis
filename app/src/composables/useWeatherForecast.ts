@@ -16,6 +16,11 @@ export function useWeatherForecast(
     return Math.round(total * 10) / 10
   })
 
+  const maxTempNext7Days = computed(() => {
+    if (!forecast.value?.days.length) return null
+    return Math.max(...forecast.value.days.map((day) => day.max_temperature_c))
+  })
+
   watch(
     () => {
       const lat = toValue(latitude)
@@ -52,5 +57,6 @@ export function useWeatherForecast(
     loading,
     error,
     rainNext7Days,
+    maxTempNext7Days,
   }
 }
