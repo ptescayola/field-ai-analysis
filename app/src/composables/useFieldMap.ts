@@ -194,6 +194,7 @@ export function useFieldMap(options: UseFieldMapOptions) {
       style: activeStyle(),
       center: INITIAL_CENTER,
       zoom: INITIAL_ZOOM,
+      scrollZoom: false,
       attributionControl: {},
     })
 

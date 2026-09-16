@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import { computed } from "vue"
+import { computed, ref } from "vue"
 import FieldSnapshotCharts from "./analysis/FieldSnapshotCharts.vue"
-import MetricBar from "./analysis/MetricBar.vue"
 import RiskMeter from "./analysis/RiskMeter.vue"
 import ScoreRing from "./analysis/ScoreRing.vue"
-import {
-  healthScoreTone,
-  parseObservationMetric,
-} from "../utils/metric-visualization"
+import { healthScoreTone } from "../utils/metric-visualization"
 import type {
   AnalysisOutput,
   FieldData,
@@ -23,6 +19,27 @@ const props = defineProps<{
   field?: FieldData | null
 }>()
 
+const narrativeExpanded = ref(false)
+
+const coordinatorNarrative = computed(() => {
+  const summary = props.result.summary.trim()
+  const explanation = props.result.explanation.trim()
+
+  if (!explanation) return summary
+  if (!summary) return explanation
+  if (summary === explanation) return summary
+  if (explanation.startsWith(summary)) return explanation
+
+  return `${summary}\n\n${explanation}`
+})
+
+const narrativeNeedsExpand = computed(() => {
+  const text = coordinatorNarrative.value
+  if (!text) return false
+  const lineBreaks = (text.match(/\n/g) ?? []).length
+  return text.length > 220 || lineBreaks >= 1
+})
+
 function formatRiskType(type: string): string {
   return type
     .replaceAll("_", " ")
@@ -36,92 +53,6 @@ function severityClass(severity: Risk["severity"]): string {
 function formatPercent(value: number): string {
   return `${Math.round(value * 100)}%`
 }
-
-const METRIC_LABELS: Record<string, string> = {
-  soil_moisture: "Soil moisture",
-  temperature: "Temperature",
-  humidity: "Humidity",
-  rainfall_last_7_days: "Rainfall (last 7 days)",
-  ndvi: "NDVI",
-  rain_forecast_next_48h: "Rain forecast (next 48h)",
-}
-
-const ASSESSMENT_COPY: Record<string, { label: string; hint: string }> = {
-  low: { label: "Low", hint: "Below typical levels for this metric" },
-  moderate: { label: "Moderate", hint: "Within a normal range" },
-  high: { label: "High", hint: "Above typical levels for this metric" },
-  "moderately high": {
-    label: "Moderately high",
-    hint: "Slightly above normal",
-  },
-  "moderately low": { label: "Moderately low", hint: "Slightly below normal" },
-  normal: { label: "Normal", hint: "Within the expected range" },
-  decreasing: {
-    label: "Decreasing",
-    hint: "Trending downward compared to recent values",
-  },
-  increasing: {
-    label: "Increasing",
-    hint: "Trending upward compared to recent values",
-  },
-  stable: { label: "Stable", hint: "No significant change detected" },
-  expected: { label: "Expected", hint: "Matches the forecast for this period" },
-  anomalous: {
-    label: "Unusual",
-    hint: "Outside typical patterns for this field",
-  },
-}
-
-function normalizeKey(value: string): string {
-  return value.trim().toLowerCase().replaceAll("_", " ")
-}
-
-function formatMetric(metric: string): string {
-  const key = metric.trim().toLowerCase()
-  return METRIC_LABELS[key] ?? metric.replaceAll("_", " ")
-}
-
-function formatAssessment(assessment: string): { label: string; hint: string } {
-  const key = normalizeKey(assessment)
-  const copy = ASSESSMENT_COPY[key]
-  if (copy) return copy
-
-  const label = assessment
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase())
-
-  return { label, hint: "Assessment from field data analysis" }
-}
-
-function assessmentTone(assessment: string): string {
-  const key = normalizeKey(assessment)
-  if (["low", "moderately low", "decreasing"].includes(key)) return "tone-low"
-  if (["high", "moderately high", "increasing", "anomalous"].includes(key))
-    return "tone-high"
-  return "tone-neutral"
-}
-
-function getAssessmentCopy(assessment: string): {
-  label: string
-  hint: string
-  tone: string
-} {
-  const { label, hint } = formatAssessment(assessment)
-  return { label, hint, tone: assessmentTone(assessment) }
-}
-
-const dataAnalystObservations = computed(() =>
-  props.result.agents.data_analyst.observations.map((obs) => ({
-    ...obs,
-    metricLabel: formatMetric(obs.metric),
-    assessmentCopy: getAssessmentCopy(obs.assessment),
-    chart: parseObservationMetric(obs.metric, obs.value, obs.assessment),
-  })),
-)
-
-const chartableObservations = computed(() =>
-  dataAnalystObservations.value.filter((obs) => obs.chart !== null),
-)
 
 const healthTone = computed(() =>
   healthScoreTone(props.result.field_health_score),
@@ -346,15 +277,28 @@ function formatVegetationType(type: string): string {
       </div>
     </section>
 
-    <FieldSnapshotCharts v-if="field" :field="field" />
+    <FieldSnapshotCharts
+      v-if="field"
+      :field="field"
+      :data-analyst-observations="result.agents.data_analyst.observations"
+    />
 
     <section class="card summary-card">
       <h2>Summary</h2>
-      <p class="summary-text">{{ result.summary }}</p>
-      <details class="explanation-details">
-        <summary>Full explanation</summary>
-        <p>{{ result.explanation }}</p>
-      </details>
+      <p
+        class="summary-text"
+        :class="{ 'summary-text--clamped': !narrativeExpanded }"
+      >
+        {{ coordinatorNarrative }}
+      </p>
+      <button
+        v-if="narrativeNeedsExpand"
+        type="button"
+        class="read-more"
+        @click="narrativeExpanded = !narrativeExpanded"
+      >
+        {{ narrativeExpanded ? "Show less" : "Read more" }}
+      </button>
     </section>
 
     <article class="card agronomist-panel">
@@ -406,52 +350,21 @@ function formatVegetationType(type: string): string {
       </div>
     </article>
 
-    <section class="analysts-row">
-      <article class="card analyst-panel">
-        <h2>Data Analyst</h2>
-        <div v-if="chartableObservations.length" class="metrics-chart">
-          <MetricBar
-            v-for="(obs, i) in chartableObservations"
-            :key="i"
-            :metric="obs.chart!"
-            :assessment-label="obs.assessmentCopy.label"
-          />
-        </div>
-        <ul v-else class="observations">
-          <li v-for="(obs, i) in dataAnalystObservations" :key="i">
-            <div class="obs-row">
-              <span class="obs-metric">{{ obs.metricLabel }}</span>
-              <span class="obs-value">{{ obs.value }}</span>
-            </div>
-            <div class="obs-assessment">
-              <span
-                class="assessment-badge"
-                :class="obs.assessmentCopy.tone"
-                :title="obs.assessmentCopy.hint"
-              >
-                {{ obs.assessmentCopy.label }}
-              </span>
-            </div>
-          </li>
-        </ul>
-      </article>
-
-      <article class="card analyst-panel">
-        <h2>Risk Analyst</h2>
-        <ul
-          v-if="result.agents.risk_analyst.risks.length"
-          class="risks risks-visual"
-        >
-          <RiskMeter
-            v-for="(risk, i) in result.agents.risk_analyst.risks"
-            :key="i"
-            :risk="risk"
-            :label="formatRiskType(risk.type)"
-          />
-        </ul>
-        <p v-else class="empty">None identified</p>
-      </article>
-    </section>
+    <article class="card analyst-panel">
+      <h2>Risk Analyst</h2>
+      <ul
+        v-if="result.agents.risk_analyst.risks.length"
+        class="risks risks-visual"
+      >
+        <RiskMeter
+          v-for="(risk, i) in result.agents.risk_analyst.risks"
+          :key="i"
+          :risk="risk"
+          :label="formatRiskType(risk.type)"
+        />
+      </ul>
+      <p v-else class="empty">None identified</p>
+    </article>
   </div>
 </template>
 
@@ -525,24 +438,6 @@ function formatVegetationType(type: string): string {
   line-height: 1.5;
 }
 
-.metrics-chart {
-  display: grid;
-  gap: 0.85rem;
-}
-
-.analysts-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  align-items: start;
-}
-
-@media (max-width: 768px) {
-  .analysts-row {
-    grid-template-columns: 1fr;
-  }
-}
-
 .analyst-panel h2 {
   margin: 0 0 0.75rem;
   font-size: 1.15rem;
@@ -554,43 +449,36 @@ function formatVegetationType(type: string): string {
 
 .summary-text {
   margin: 0;
+  font-size: 0.85rem;
   line-height: 1.6;
+  white-space: pre-line;
 }
 
-.explanation-details {
-  margin-top: 1rem;
-  padding-top: 0.85rem;
-  border-top: 1px solid var(--border);
+.summary-text--clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.explanation-details summary {
-  cursor: pointer;
+.read-more {
+  display: block;
+  width: 100%;
+  margin-top: 0.85rem;
+  padding: 0.35rem 0.5rem;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.82rem;
   font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
   color: var(--green);
-  list-style: none;
+  text-align: center;
+  cursor: pointer;
 }
 
-.explanation-details summary::-webkit-details-marker {
-  display: none;
-}
-
-.explanation-details summary::after {
-  content: " +";
-  color: var(--text-muted);
-  font-weight: 400;
-}
-
-.explanation-details[open] summary::after {
-  content: " −";
-}
-
-.explanation-details p {
-  margin: 0.65rem 0 0;
-  line-height: 1.6;
-  color: var(--text-muted);
+.read-more:hover {
+  text-decoration: underline;
 }
 
 .risks-visual {
@@ -817,64 +705,6 @@ function formatVegetationType(type: string): string {
   font-size: 0.68rem;
   color: var(--amber-deep);
   margin-right: 0.35rem;
-}
-
-.observations li {
-  padding: 0.65rem 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.observations li:last-child {
-  border-bottom: none;
-}
-
-.obs-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
-  margin-bottom: 0.35rem;
-}
-
-.obs-metric {
-  font-weight: 600;
-  color: var(--text);
-}
-
-.obs-value {
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
-}
-
-.obs-assessment {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.assessment-badge {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.15rem 0.45rem;
-  border-radius: 4px;
-  font-weight: 600;
-}
-
-.tone-neutral {
-  background: var(--green-pale);
-  color: var(--green);
-}
-
-.tone-low {
-  background: var(--chart-secondary-pale);
-  color: var(--chart-secondary);
-}
-
-.tone-high {
-  background: var(--amber-pale);
-  color: var(--amber-deep);
 }
 
 .reasoning-block {

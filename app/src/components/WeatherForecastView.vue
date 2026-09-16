@@ -20,10 +20,6 @@ function formatRain(mm: number): string {
 
 <template>
   <div class="forecast">
-    <div class="forecast-header">
-      <h3>{{ title ?? "7-day forecast" }}</h3>
-    </div>
-
     <p v-if="loading" class="forecast-state">Loading live weather…</p>
     <p v-else-if="error" class="forecast-state error">{{ error }}</p>
     <ul v-else-if="forecast" class="forecast-strip">
@@ -45,10 +41,6 @@ function formatRain(mm: number): string {
 </template>
 
 <style scoped>
-.forecast-header {
-  margin-bottom: 0.65rem;
-}
-
 h3 {
   margin: 0;
   font-size: 0.95rem;

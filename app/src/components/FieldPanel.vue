@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import { useWeatherForecast } from "../composables/useWeatherForecast"
+import FieldDataTile, {
+  type FieldDataTileModel,
+} from "./FieldDataTile.vue"
 import WeatherForecastView from "./WeatherForecastView.vue"
+import { formatShortDate } from "../utils/intl-dates"
 import type { FieldData } from "../types"
 
 const props = defineProps<{
@@ -19,43 +23,79 @@ const { forecast, loading, error, rainNext7Days } = useWeatherForecast(
 function formatCropName(value: string): string {
   return value.replaceAll("_", " ")
 }
+
+const fieldDataTiles = computed((): FieldDataTileModel[] => {
+  const field = props.field
+
+  const rainLine =
+    rainNext7Days.value !== null
+      ? `${rainNext7Days.value} mm rain next 7d`
+      : `${field.weather.rain_last_7_days_mm} mm rain last 7d`
+
+  return [
+    {
+      id: "planted",
+      label: "Planted",
+      highlight: formatShortDate(field.crop.planting_date),
+    },
+    {
+      id: "crop",
+      label: "Crop",
+      highlight: formatCropName(field.crop.type),
+      footer: [
+        formatCropName(field.crop.variety),
+        formatCropName(field.crop.growth_stage),
+      ],
+      capitalizeHighlight: true,
+      capitalizeFooter: true,
+    },
+    {
+      id: "area",
+      label: "Area",
+      highlight: `${field.field.area_hectares} ha`,
+    },
+    {
+      id: "ndvi",
+      label: "NDVI",
+      highlight: String(field.vegetation.ndvi),
+      footer: [`prev. ${field.vegetation.ndvi_previous_week}`],
+    },
+    {
+      id: "weather",
+      label: "Weather",
+      highlight: `${field.weather.temperature_c}°C`,
+      footer: [
+        `${field.weather.humidity_percent}% humidity`,
+        rainLine,
+      ],
+    },
+    {
+      id: "soil",
+      label: "Soil",
+      highlight: formatCropName(field.soil.type),
+      footer: [
+        `${field.soil.moisture_percent}% moisture`,
+        `${field.soil.temperature_c}°C soil · pH ${field.soil.ph}`,
+      ],
+      capitalizeHighlight: true,
+    },
+  ]
+})
 </script>
 
 <template>
   <section class="panel">
     <h2>Field data</h2>
     <div class="grid">
-      <div class="stat">
-        <span class="label">Crop</span>
-        <strong class="crop-value">{{
-          formatCropName(field.crop.variety)
-        }}</strong>
-      </div>
-      <div class="stat">
-        <span class="label">Area</span>
-        <strong>{{ field.field.area_hectares }} ha</strong>
-      </div>
-      <div class="stat">
-        <span class="label">Soil moisture</span>
-        <strong>{{ field.soil.moisture_percent }}%</strong>
-      </div>
-      <div class="stat">
-        <span class="label">NDVI</span>
-        <strong>{{ field.vegetation.ndvi }}</strong>
-        <span class="sub">prev. {{ field.vegetation.ndvi_previous_week }}</span>
-      </div>
-      <div class="stat">
-        <span class="label">Temperature</span>
-        <strong>{{ field.weather.temperature_c }}°C</strong>
-        <span class="sub">field snapshot</span>
-      </div>
-      <div class="stat">
-        <span class="label">Rain (7 days)</span>
-        <strong v-if="rainNext7Days !== null">{{ rainNext7Days }} mm</strong>
-        <strong v-else>{{ field.weather.rain_last_7_days_mm }} mm</strong>
-        <span v-if="rainNext7Days !== null" class="sub">live forecast</span>
-        <span v-else class="sub">field snapshot</span>
-      </div>
+      <FieldDataTile
+        v-for="tile in fieldDataTiles"
+        :key="tile.id"
+        :label="tile.label"
+        :highlight="tile.highlight"
+        :footer="tile.footer"
+        :capitalize-highlight="tile.capitalizeHighlight"
+        :capitalize-footer="tile.capitalizeFooter"
+      />
     </div>
 
     <div class="forecast-section">
@@ -66,7 +106,7 @@ function formatCropName(value: string): string {
       />
     </div>
 
-    <div v-if="field.observations.length" class="farmer-notes">
+    <div v-if="false && field.observations.length" class="farmer-notes">
       <div class="farmer-notes-header">
         <h3>Notes</h3>
         <span class="source">Field observations from the grower</span>
@@ -104,37 +144,8 @@ h3 {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
   gap: 0.75rem;
-}
-
-.stat {
-  background: var(--surface-muted);
-  border-radius: 8px;
-  padding: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.label {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-}
-
-.stat strong {
-  font-size: 1.05rem;
-}
-
-.crop-value {
-  text-transform: capitalize;
-}
-
-.sub {
-  font-size: 0.8rem;
-  color: var(--text-muted);
 }
 
 .forecast-section {

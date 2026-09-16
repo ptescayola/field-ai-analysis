@@ -5,46 +5,15 @@ defineProps<{
   risk: Risk
   label: string
 }>()
-
-const SEVERITY_FILL: Record<Risk["severity"], number> = {
-  low: 33,
-  medium: 66,
-  high: 100,
-}
 </script>
 
 <template>
   <li class="risk-meter" :class="`risk-meter--${risk.severity}`">
     <div class="risk-meter-head">
       <strong class="risk-meter-title">{{ label }}</strong>
-      <div class="risk-meter-meta">
-        <span class="badge" :class="`severity-${risk.severity}`">{{
-          risk.severity
-        }}</span>
-        <span class="risk-meter-conf"
-          >{{ Math.round(risk.confidence * 100) }}%</span
-        >
-      </div>
-    </div>
-    <div class="risk-meter-bars" aria-hidden="true">
-      <div class="risk-meter-bar">
-        <span class="risk-meter-bar-label">Severity</span>
-        <div class="risk-meter-track">
-          <div
-            class="risk-meter-fill risk-meter-fill--severity"
-            :style="{ width: `${SEVERITY_FILL[risk.severity]}%` }"
-          />
-        </div>
-      </div>
-      <div class="risk-meter-bar">
-        <span class="risk-meter-bar-label">Confidence</span>
-        <div class="risk-meter-track">
-          <div
-            class="risk-meter-fill risk-meter-fill--confidence"
-            :style="{ width: `${risk.confidence * 100}%` }"
-          />
-        </div>
-      </div>
+      <span class="badge" :class="`severity-${risk.severity}`">{{
+        risk.severity
+      }}</span>
     </div>
     <p class="risk-meter-evidence">{{ risk.evidence }}</p>
   </li>
@@ -67,25 +36,11 @@ const SEVERITY_FILL: Record<Risk["severity"], number> = {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .risk-meter-title {
   min-width: 0;
-}
-
-.risk-meter-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
-  margin-left: auto;
-}
-
-.risk-meter-conf {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
 }
 
 .badge {
@@ -94,6 +49,7 @@ const SEVERITY_FILL: Record<Risk["severity"], number> = {
   padding: 0.15rem 0.45rem;
   border-radius: 4px;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .severity-low {
@@ -109,54 +65,6 @@ const SEVERITY_FILL: Record<Risk["severity"], number> = {
 .severity-high {
   background: var(--red-pale);
   color: var(--red);
-}
-
-.risk-meter-bars {
-  display: grid;
-  gap: 0.35rem;
-  margin-bottom: 0.45rem;
-}
-
-.risk-meter-bar {
-  display: grid;
-  grid-template-columns: 5.5rem 1fr;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.risk-meter-bar-label {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--text-muted);
-}
-
-.risk-meter-track {
-  height: 0.35rem;
-  border-radius: 999px;
-  background: var(--chart-track);
-  overflow: hidden;
-}
-
-.risk-meter-fill {
-  height: 100%;
-  border-radius: inherit;
-}
-
-.risk-meter-fill--severity {
-  background: var(--red);
-}
-
-.risk-meter--low .risk-meter-fill--severity {
-  background: var(--green);
-}
-
-.risk-meter--medium .risk-meter-fill--severity {
-  background: var(--amber);
-}
-
-.risk-meter-fill--confidence {
-  background: var(--chart-secondary);
 }
 
 .risk-meter-evidence {
