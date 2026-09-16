@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
 import FieldSnapshotCharts from "./analysis/FieldSnapshotCharts.vue"
-import RiskMeter from "./analysis/RiskMeter.vue"
+import FieldDataTile, {
+  type FieldDataTileModel,
+} from "./FieldDataTile.vue"
 import ScoreRing from "./analysis/ScoreRing.vue"
 import { healthScoreTone } from "../utils/metric-visualization"
 import type {
@@ -58,6 +60,18 @@ const healthTone = computed(() =>
   healthScoreTone(props.result.field_health_score),
 )
 
+const riskTiles = computed((): FieldDataTileModel[] =>
+  props.result.agents.risk_analyst.risks.map((risk, index) => ({
+    id: `${risk.type}-${index}`,
+    label: formatRiskType(risk.type),
+    highlight: risk.severity,
+    capitalizeHighlight: true,
+    highlightSeverity: risk.severity,
+    footer: risk.evidence.trim() ? [risk.evidence.trim()] : [],
+    footerAlign: "start",
+  })),
+)
+
 const imageAnalyst = computed(() => props.result.agents.image_analyst ?? null)
 
 const IRRIGATION_TONES: Record<IrrigationStatus, string> = {
@@ -90,55 +104,78 @@ const HEALTH_TONES: Record<PlantHealthRating, string> = {
 
 const agronomist = computed(() => props.result.agents.agronomist)
 
-type AgronomistFacet = {
-  label: string
-  value: string
-  tone: string
-  extra: string | null
-  note: string | null
-  assessment: string
+function chipToneToHighlightSeverity(
+  tone: string,
+): FieldDataTileModel["highlightSeverity"] | undefined {
+  if (tone === "chip-good") return "low"
+  if (tone === "chip-warn") return "medium"
+  if (tone === "chip-bad") return "high"
+  return undefined
 }
 
-const agronomistFacets = computed((): AgronomistFacet[] => {
+function agronomistTile(
+  id: string,
+  label: string,
+  value: string,
+  tone: string,
+  footerLines: Array<string | null | undefined>,
+): FieldDataTileModel {
+  return {
+    id,
+    label,
+    highlight: value,
+    capitalizeHighlight: true,
+    highlightSeverity: chipToneToHighlightSeverity(tone),
+    footer: footerLines
+      .filter((line): line is string => Boolean(line?.trim()))
+      .map((line) => line.trim()),
+    footerAlign: "start",
+  }
+}
+
+const agronomistTiles = computed((): FieldDataTileModel[] => {
   const { irrigation, crop_stress, crop_development, plant_health } =
     agronomist.value
 
+  const irrigationExtra =
+    irrigation.recommended_mm === null
+      ? "N/A"
+      : `${irrigation.recommended_mm} mm`
+
   return [
-    {
-      label: "Irrigation",
-      value: formatRiskType(irrigation.status),
-      tone: IRRIGATION_TONES[irrigation.status],
-      extra:
-        irrigation.recommended_mm === null
-          ? null
-          : `${irrigation.recommended_mm} mm`,
-      note: irrigation.timing,
-      assessment: irrigation.assessment,
-    },
-    {
-      label: "Stress",
-      value: formatRiskType(crop_stress.level),
-      tone: STRESS_TONES[crop_stress.level],
-      extra: null,
-      note: crop_stress.drivers.join(" · ") || null,
-      assessment: crop_stress.assessment,
-    },
-    {
-      label: "Development",
-      value: formatRiskType(crop_development.stage_assessment),
-      tone: STAGE_TONES[crop_development.stage_assessment],
-      extra: null,
-      note: null,
-      assessment: crop_development.assessment,
-    },
-    {
-      label: "Health",
-      value: formatRiskType(plant_health.rating),
-      tone: HEALTH_TONES[plant_health.rating],
-      extra: null,
-      note: null,
-      assessment: plant_health.assessment,
-    },
+    agronomistTile(
+      "irrigation",
+      "Irrigation",
+      formatRiskType(irrigation.status),
+      IRRIGATION_TONES[irrigation.status],
+      [irrigationExtra, irrigation.timing, irrigation.assessment],
+    ),
+    agronomistTile(
+      "stress",
+      "Stress",
+      formatRiskType(crop_stress.level),
+      STRESS_TONES[crop_stress.level],
+      [
+        crop_stress.drivers.length
+          ? crop_stress.drivers.join(" · ")
+          : null,
+        crop_stress.assessment,
+      ],
+    ),
+    agronomistTile(
+      "development",
+      "Development",
+      formatRiskType(crop_development.stage_assessment),
+      STAGE_TONES[crop_development.stage_assessment],
+      [crop_development.assessment],
+    ),
+    agronomistTile(
+      "health",
+      "Health",
+      formatRiskType(plant_health.rating),
+      HEALTH_TONES[plant_health.rating],
+      [plant_health.assessment],
+    ),
   ]
 })
 
@@ -309,18 +346,17 @@ function formatVegetationType(type: string): string {
         </span>
       </div>
 
-      <div class="facets">
-        <div v-for="facet in agronomistFacets" :key="facet.label" class="facet">
-          <p class="facet-label">{{ facet.label }}</p>
-          <p class="facet-head">
-            <span class="chip" :class="facet.tone">{{ facet.value }}</span>
-            <span v-if="facet.extra" class="facet-extra">
-              {{ facet.extra }}
-            </span>
-          </p>
-          <p v-if="facet.note" class="facet-note">{{ facet.note }}</p>
-          <p class="facet-assessment">{{ facet.assessment }}</p>
-        </div>
+      <div class="agronomist-tiles">
+        <FieldDataTile
+          v-for="tile in agronomistTiles"
+          :key="tile.id"
+          :label="tile.label"
+          :highlight="tile.highlight"
+          :footer="tile.footer"
+          :capitalize-highlight="tile.capitalizeHighlight"
+          :highlight-severity="tile.highlightSeverity"
+          :footer-align="tile.footerAlign"
+        />
       </div>
 
       <div v-if="agronomist.actions.length" class="actions">
@@ -328,8 +364,11 @@ function formatVegetationType(type: string): string {
         <ol class="action-list">
           <li v-for="(action, i) in agronomist.actions" :key="i">
             <div class="action-head">
-              <span :class="['badge', severityClass(action.priority)]">
-                {{ action.priority }}
+              <span
+                v-if="action.priority === 'high'"
+                class="badge severity-high action-priority-tag"
+              >
+                Priority
               </span>
               <span class="action-text">{{ action.action }}</span>
               <span class="action-window">{{ action.window }}</span>
@@ -343,26 +382,22 @@ function formatVegetationType(type: string): string {
         <span class="data-gaps-label">Missing data</span>
         {{ agronomist.data_gaps.join(" · ") }}
       </p>
-
-      <div class="reasoning-block">
-        <h3 class="panel-title">Reasoning</h3>
-        <p class="reasoning-text">{{ agronomist.reasoning }}</p>
-      </div>
     </article>
 
     <article class="card analyst-panel">
       <h2>Risk Analyst</h2>
-      <ul
-        v-if="result.agents.risk_analyst.risks.length"
-        class="risks risks-visual"
-      >
-        <RiskMeter
-          v-for="(risk, i) in result.agents.risk_analyst.risks"
-          :key="i"
-          :risk="risk"
-          :label="formatRiskType(risk.type)"
+      <div v-if="riskTiles.length" class="risk-tiles">
+        <FieldDataTile
+          v-for="tile in riskTiles"
+          :key="tile.id"
+          :label="tile.label"
+          :highlight="tile.highlight"
+          :footer="tile.footer"
+          :capitalize-highlight="tile.capitalizeHighlight"
+          :highlight-severity="tile.highlightSeverity"
+          :footer-align="tile.footerAlign"
         />
-      </ul>
+      </div>
       <p v-else class="empty">None identified</p>
     </article>
   </div>
@@ -481,8 +516,23 @@ function formatVegetationType(type: string): string {
   text-decoration: underline;
 }
 
-.risks-visual {
-  gap: 0;
+.risk-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  align-items: stretch;
+}
+
+@media (max-width: 960px) {
+  .risk-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .risk-tiles {
+    grid-template-columns: 1fr;
+  }
 }
 
 .card {
@@ -564,81 +614,23 @@ function formatVegetationType(type: string): string {
   font-size: 1.15rem;
 }
 
-.facets {
+.agronomist-tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 0.85rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+  align-items: stretch;
 }
 
-.facet {
-  border-left: 2px solid var(--border);
-  padding-left: 0.7rem;
+@media (max-width: 960px) {
+  .agronomist-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-.facet-label {
-  margin: 0;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-}
-
-.facet-head {
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-  margin: 0.3rem 0 0;
-}
-
-.chip {
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  padding: 0.15rem 0.45rem;
-  border-radius: 4px;
-}
-
-.chip-good {
-  background: var(--green-pale);
-  color: var(--green);
-}
-
-.chip-warn {
-  background: var(--amber-pale);
-  color: var(--amber-deep);
-}
-
-.chip-bad {
-  background: var(--red-pale);
-  color: var(--red);
-}
-
-.chip-muted {
-  background: var(--surface-muted);
-  color: var(--text-muted);
-}
-
-.facet-extra {
-  font-size: 0.85rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.facet-note {
-  margin: 0.3rem 0 0;
-  font-size: 0.78rem;
-  line-height: 1.4;
-  color: var(--chart-secondary);
-}
-
-.facet-assessment {
-  margin: 0.3rem 0 0;
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: var(--text-muted);
+@media (max-width: 520px) {
+  .agronomist-tiles {
+    grid-template-columns: 1fr;
+  }
 }
 
 .actions {
@@ -668,20 +660,34 @@ function formatVegetationType(type: string): string {
 
 .action-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.45rem;
   flex-wrap: wrap;
 }
 
+.action-priority-tag {
+  flex-shrink: 0;
+}
+
 .action-text {
+  flex: 1;
+  min-width: 0;
   font-weight: 600;
   font-size: 0.9rem;
 }
 
 .action-window {
-  font-size: 0.78rem;
-  color: var(--text-muted);
+  flex-shrink: 0;
   margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  color: var(--green);
+  text-align: right;
 }
 
 .action-rationale {
@@ -705,19 +711,6 @@ function formatVegetationType(type: string): string {
   font-size: 0.68rem;
   color: var(--amber-deep);
   margin-right: 0.35rem;
-}
-
-.reasoning-block {
-  margin-top: 1rem;
-  padding-top: 0.85rem;
-  border-top: 1px solid var(--border);
-}
-
-.reasoning-text {
-  margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.6;
-  color: var(--text);
 }
 
 .image-agent {

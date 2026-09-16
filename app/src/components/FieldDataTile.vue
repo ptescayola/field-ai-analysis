@@ -9,6 +9,8 @@ export type FieldDataTileAnalyst = {
   hint?: string
 }
 
+export type HighlightSeverity = "low" | "medium" | "high"
+
 export type FieldDataTileModel = {
   id: string
   label: string
@@ -19,6 +21,8 @@ export type FieldDataTileModel = {
   progress?: { pct: number; tone: MetricProgressTone }
   footerAccents?: Array<"up" | "down" | undefined>
   analyst?: FieldDataTileAnalyst
+  highlightSeverity?: HighlightSeverity
+  footerAlign?: "center" | "start"
 }
 
 withDefaults(
@@ -31,12 +35,15 @@ withDefaults(
     progress?: FieldDataTileModel["progress"]
     footerAccents?: FieldDataTileModel["footerAccents"]
     analyst?: FieldDataTileAnalyst
+    highlightSeverity?: HighlightSeverity
+    footerAlign?: "center" | "start"
   }>(),
   {
     footer: () => [],
     capitalizeHighlight: false,
     capitalizeFooter: false,
     footerAccents: () => [],
+    footerAlign: "center",
   },
 )
 
@@ -52,7 +59,12 @@ function footerAccentClass(accent: "up" | "down" | undefined): string | undefine
     <span class="field-data-tile-label">{{ label }}</span>
     <p
       class="field-data-tile-highlight"
-      :class="{ capitalize: capitalizeHighlight }"
+      :class="[
+        { capitalize: capitalizeHighlight },
+        highlightSeverity
+          ? `field-data-tile-highlight--severity-${highlightSeverity}`
+          : undefined,
+      ]"
     >
       {{ highlight }}
     </p>
@@ -63,7 +75,11 @@ function footerAccentClass(accent: "up" | "down" | undefined): string | undefine
         :style="{ width: `${progress.pct}%` }"
       />
     </div>
-    <div v-if="footer.length" class="field-data-tile-footer">
+    <div
+      v-if="footer.length"
+      class="field-data-tile-footer"
+      :class="{ 'field-data-tile-footer--start': footerAlign === 'start' }"
+    >
       <span
         v-for="(line, index) in footer"
         :key="index"
@@ -124,6 +140,18 @@ function footerAccentClass(accent: "up" | "down" | undefined): string | undefine
   font-variant-numeric: tabular-nums;
 }
 
+.field-data-tile-highlight--severity-low {
+  color: var(--green);
+}
+
+.field-data-tile-highlight--severity-medium {
+  color: #b08900;
+}
+
+.field-data-tile-highlight--severity-high {
+  color: var(--red);
+}
+
 .field-data-tile-track {
   height: 0.35rem;
   border-radius: 999px;
@@ -164,6 +192,10 @@ function footerAccentClass(accent: "up" | "down" | undefined): string | undefine
   line-height: 1.35;
   text-align: center;
   color: var(--text-muted);
+}
+
+.field-data-tile-footer--start {
+  text-align: left;
 }
 
 .footer-accent-up {
