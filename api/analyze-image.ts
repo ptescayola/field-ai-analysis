@@ -7,7 +7,6 @@ import {
   type VercelRequest,
   type VercelResponse,
 } from "./_lib.js"
-import { toAnalysisResponse } from "../backend/presentation/http/analysis-response.js"
 import { parseImagePayload } from "../backend/presentation/http/image-request-utils.js"
 
 export const config = {
@@ -36,7 +35,7 @@ export default async function handler(
       parsedImage,
       parsedImage.fileName,
     )
-    jsonResponse(req, res, toAnalysisResponse(result))
+    jsonResponse(req, res, result)
   } catch (error) {
     console.error("Image analysis failed", error)
     const message = getErrorMessage(error, "Image analysis failed")

@@ -60,7 +60,7 @@ npm install --prefix app
 ```bash
 npm run dev      # API (3001) + Vue UI (5173)
 npm run analyze  # CLI analysis
-npm run analyze -- --json --trace
+npm run analyze -- --json
 ```
 
 Run from the project root so `./data` and `./agents` resolve correctly.
@@ -93,6 +93,7 @@ npm run build --prefix app   # static UI → app/dist/
 ```env
 OPENAI_API_KEY=sk-...
 VITE_OPENAI_MODEL=gpt-4o-mini
+```
 
 ### Verify
 
@@ -125,6 +126,7 @@ vercel dev
 | GET | `/api/fields/:file` | Get field data |
 | GET | `/api/weather?lat=&lng=` | 7-day forecast (Open-Meteo) |
 | POST | `/api/analyze` | Run analysis pipeline |
+| POST | `/api/analyze-image` | Image → vision agent → full pipeline |
 
 ## Bounded contexts
 
@@ -133,4 +135,3 @@ vercel dev
 | **Field** | Field snapshots (crop, soil, vegetation, notes) |
 | **Weather** | Live forecast enrichment |
 | **Analysis** | Multi-agent pipeline, irrigation decision |
-| **Observability** | Traces, token metrics (CLI `--trace`) |

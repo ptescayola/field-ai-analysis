@@ -9,7 +9,6 @@ import { ListFieldsGeoJsonUseCase } from "./application/use-cases/list-fields-ge
 import { ListFieldsUseCase } from "./application/use-cases/list-fields.use-case.js"
 import { OpenAIAgentAdapter } from "./infrastructure/llm/openai-agent.adapter.js"
 import { JsonFieldRepository } from "./infrastructure/persistence/json-field.repository.js"
-import { FileTraceRepository } from "./infrastructure/persistence/file-trace.repository.js"
 import { FilePromptRepository } from "./infrastructure/prompts/file-prompt.repository.js"
 import { OpenMeteoAdapter } from "./infrastructure/weather/open-meteo.adapter.js"
 
@@ -20,7 +19,6 @@ export interface Application {
   listFields: ListFieldsUseCase
   listFieldsGeoJson: ListFieldsGeoJsonUseCase
   getWeatherForecast: GetWeatherForecastUseCase
-  traceRepository: FileTraceRepository
 }
 
 export function createApplication(): Application {
@@ -30,8 +28,6 @@ export function createApplication(): Application {
   const weatherPort = new OpenMeteoAdapter()
   const promptRepository = new FilePromptRepository(config.agentsDir)
   const agentPort = new OpenAIAgentAdapter(promptRepository)
-  const traceRepository = new FileTraceRepository(config.tracesDir)
-
   const enrichFieldWeather = new EnrichFieldWeatherService(weatherPort)
   const orchestrator = new FieldAnalysisOrchestrator(agentPort)
 
@@ -40,18 +36,15 @@ export function createApplication(): Application {
       fieldRepository,
       enrichFieldWeather,
       orchestrator,
-      promptRepository,
     ),
     analyzeFieldImage: new AnalyzeFieldImageUseCase(
       enrichFieldWeather,
       orchestrator,
       agentPort,
-      promptRepository,
     ),
     getField: new GetFieldUseCase(fieldRepository),
     listFields: new ListFieldsUseCase(fieldRepository),
     listFieldsGeoJson: new ListFieldsGeoJsonUseCase(fieldRepository),
     getWeatherForecast: new GetWeatherForecastUseCase(weatherPort),
-    traceRepository,
   }
 }

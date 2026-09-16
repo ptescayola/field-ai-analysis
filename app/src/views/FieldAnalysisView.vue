@@ -10,7 +10,7 @@ import FieldPanel from "../components/FieldPanel.vue"
 import FieldWorkflowBar from "../components/FieldWorkflowBar.vue"
 import { useFields } from "../composables/useFields"
 import AppLayout from "../layouts/AppLayout.vue"
-import type { PipelineResult } from "../types"
+import type { AnalysisOutput } from "../types"
 
 const {
   fields,
@@ -22,7 +22,7 @@ const {
   selectField,
 } = useFields()
 
-const result = ref<PipelineResult | null>(null)
+const result = ref<AnalysisOutput | null>(null)
 const analyzing = ref(false)
 const analysisError = ref<string | null>(null)
 

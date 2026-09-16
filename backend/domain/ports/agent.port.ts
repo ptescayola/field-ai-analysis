@@ -1,5 +1,4 @@
 import type { ZodType } from "zod"
-import type { AgentTrace } from "../pipeline/pipeline.schema.js"
 
 export interface LoadedPrompt {
   content: string
@@ -8,12 +7,10 @@ export interface LoadedPrompt {
 
 export interface PromptRepository {
   getPrompt(agentName: string): Promise<LoadedPrompt>
-  getAllVersions(): Promise<Record<string, string>>
 }
 
 export interface AgentRunResult<T> {
   output: T
-  trace: AgentTrace
 }
 
 export interface AgentImageInput {

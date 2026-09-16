@@ -8,16 +8,12 @@ import type {
 export class FilePromptRepository implements PromptRepository {
   constructor(private readonly agentsDir: string) {}
 
-  async getAllVersions(): Promise<Record<string, string>> {
-    const raw = await readFile(join(this.agentsDir, "manifest.json"), "utf-8")
-    return JSON.parse(raw) as Record<string, string>
-  }
-
   async getPrompt(agentName: string): Promise<LoadedPrompt> {
-    const [content, manifest] = await Promise.all([
+    const [content, manifestRaw] = await Promise.all([
       readFile(join(this.agentsDir, `${agentName}.md`), "utf-8"),
-      this.getAllVersions(),
+      readFile(join(this.agentsDir, "manifest.json"), "utf-8"),
     ])
+    const manifest = JSON.parse(manifestRaw) as Record<string, string>
 
     const version = manifest[agentName]
     if (!version) {

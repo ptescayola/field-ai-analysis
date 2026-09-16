@@ -5,7 +5,6 @@ import type {
   AgentRunResult,
   PromptRepository,
 } from "../../domain/ports/agent.port.js"
-import type { TokenUsage } from "../../domain/pipeline/pipeline.schema.js"
 import { getModel, getOpenAIClient } from "./openai.client.js"
 import { validateAgentOutput } from "./validate-output.js"
 
@@ -14,11 +13,10 @@ export class OpenAIAgentAdapter implements AgentPort {
 
   async run<T>(params: AgentRunParams<T>): Promise<AgentRunResult<T>> {
     const { agentName, input, outputSchema, responseName } = params
-    const { content: systemPrompt, version: promptVersion } =
+    const { content: systemPrompt } =
       await this.promptRepository.getPrompt(agentName)
     const client = getOpenAIClient()
     const model = getModel()
-    const startedAt = performance.now()
 
     const textPrompt = [
       "Analyze the following input.",
@@ -47,7 +45,6 @@ export class OpenAIAgentAdapter implements AgentPort {
       response_format: zodResponseFormat(outputSchema, responseName),
     })
 
-    const durationMs = Math.round(performance.now() - startedAt)
     const parsed = completion.choices[0]?.message?.parsed
     if (!parsed) {
       throw new Error(`${agentName} did not return a valid JSON response.`)
@@ -59,23 +56,6 @@ export class OpenAIAgentAdapter implements AgentPort {
       agentName.replaceAll("-", " "),
     )
 
-    const usage: TokenUsage = {
-      prompt_tokens: completion.usage?.prompt_tokens ?? 0,
-      completion_tokens: completion.usage?.completion_tokens ?? 0,
-      total_tokens: completion.usage?.total_tokens ?? 0,
-    }
-
-    return {
-      output,
-      trace: {
-        agent: agentName,
-        model,
-        prompt_version: promptVersion,
-        duration_ms: durationMs,
-        usage,
-        input,
-        output,
-      },
-    }
+    return { output }
   }
 }

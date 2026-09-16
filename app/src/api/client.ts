@@ -2,7 +2,7 @@ import type { FieldsFeatureCollection } from "../types/fields-geojson"
 import type {
   FieldData,
   FieldListItem,
-  PipelineResult,
+  AnalysisOutput,
   WeatherForecast,
 } from "../types"
 
@@ -46,8 +46,8 @@ export function fetchWeather(
   return request<WeatherForecast>(apiUrl(`/api/weather?${params}`))
 }
 
-export function analyzeField(file: string): Promise<PipelineResult> {
-  return request<PipelineResult>(apiUrl("/api/analyze"), {
+export function analyzeField(file: string): Promise<AnalysisOutput> {
+  return request<AnalysisOutput>(apiUrl("/api/analyze"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ file }),
@@ -58,8 +58,8 @@ export function analyzeFieldImage(
   imageBase64: string,
   mimeType: string,
   fileName: string,
-): Promise<PipelineResult> {
-  return request<PipelineResult>(apiUrl("/api/analyze-image"), {
+): Promise<AnalysisOutput> {
+  return request<AnalysisOutput>(apiUrl("/api/analyze-image"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

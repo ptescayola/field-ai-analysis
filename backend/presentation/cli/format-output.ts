@@ -1,4 +1,4 @@
-import type { PipelineResult } from "../../domain/pipeline/pipeline.schema.js"
+import type { AnalysisOutput } from "../../domain/analysis/analysis.schema.js"
 
 function formatPercent(value: number): string {
   return `${Math.round(value * 100)}%`
@@ -10,7 +10,7 @@ function formatLabel(value: string): string {
     .replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
-function formatRiskList(risks: PipelineResult["analysis"]["risks"]): string {
+function formatRiskList(risks: AnalysisOutput["risks"]): string {
   if (risks.length === 0) {
     return "  None identified"
   }
@@ -23,30 +23,7 @@ function formatRiskList(risks: PipelineResult["analysis"]["risks"]): string {
     .join("\n")
 }
 
-function formatMeta(meta: PipelineResult["meta"]): string[] {
-  return [
-    "",
-    "Metrics",
-    "-------",
-    `Total duration: ${meta.metrics.total_duration_ms}ms`,
-    `Total tokens: ${meta.metrics.total_tokens}`,
-    `Estimated cost: $${meta.metrics.estimated_cost_usd.toFixed(6)} USD`,
-    ...meta.metrics.agents.map(
-      (agent) =>
-        `  • ${agent.agent}: ${agent.duration_ms}ms, ${agent.usage.total_tokens} tokens`,
-    ),
-    "",
-    "Prompt versions",
-    "---------------",
-    ...Object.entries(meta.prompt_versions).map(
-      ([agent, version]) => `  • ${agent}: ${version}`,
-    ),
-  ]
-}
-
-export function formatAnalysis(result: PipelineResult): string {
-  const { analysis, meta } = result
-
+export function formatAnalysis(analysis: AnalysisOutput): string {
   const lines = [
     "Field AI Analysis",
     "=================",
@@ -92,12 +69,11 @@ export function formatAnalysis(result: PipelineResult): string {
     "Risks — Risk Analyst",
     "--------------------",
     formatRiskList(analysis.agents.risk_analyst.risks),
-    ...formatMeta(meta),
   ]
 
   return lines.join("\n")
 }
 
-export function formatJson(result: PipelineResult): string {
-  return JSON.stringify(result, null, 2)
+export function formatJson(analysis: AnalysisOutput): string {
+  return JSON.stringify(analysis, null, 2)
 }

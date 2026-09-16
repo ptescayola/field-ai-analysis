@@ -3,14 +3,12 @@ import { parseCoordinatesFromFilename } from "../../domain/field/coordinates-fro
 import type {
   AgentImageInput,
   AgentPort,
-  PromptRepository,
 } from "../../domain/ports/agent.port.js"
-import type { PipelineResult } from "../../domain/pipeline/pipeline.schema.js"
+import type { AnalysisOutput } from "../../domain/analysis/analysis.schema.js"
 import {
   mergeImageIntoField,
   synthesizeFieldFromImage,
 } from "../services/merge-image-field.service.js"
-import { buildPipelineMetrics } from "../services/analysis-metrics.service.js"
 import { EnrichFieldWeatherService } from "../services/enrich-field-weather.service.js"
 import { FieldAnalysisOrchestrator } from "../services/field-analysis.orchestrator.js"
 
@@ -19,21 +17,18 @@ export class AnalyzeFieldImageUseCase {
     private readonly enrichFieldWeather: EnrichFieldWeatherService,
     private readonly orchestrator: FieldAnalysisOrchestrator,
     private readonly agentPort: AgentPort,
-    private readonly promptRepository: PromptRepository,
   ) {}
 
   async execute(
     image: AgentImageInput,
     fileName: string,
-  ): Promise<PipelineResult> {
+  ): Promise<AnalysisOutput> {
     const coordinates = parseCoordinatesFromFilename(fileName)
     if (!coordinates) {
       throw new Error(
         "Invalid image filename. Use lat,lng.ext (e.g. 39.060664,1.397765.png)",
       )
     }
-
-    const pipelineStartedAt = performance.now()
 
     console.error("Running image analyst (vision)...")
     const imageAnalystRun = await this.agentPort.run({
@@ -59,25 +54,8 @@ export class AnalyzeFieldImageUseCase {
       `Fetching live weather forecast for ${coordinates.latitude}, ${coordinates.longitude}...`,
     )
     const enrichedField = await this.enrichFieldWeather.enrich(mergedField)
-    const promptVersions = await this.promptRepository.getAllVersions()
 
     console.error("Running analysis pipeline...")
-    const result = await this.orchestrator.run(
-      enrichedField,
-      promptVersions,
-      imageAnalystRun.output,
-    )
-
-    const traces = [imageAnalystRun.trace, ...result.meta.trace]
-    const totalDurationMs = Math.round(performance.now() - pipelineStartedAt)
-
-    return {
-      analysis: result.analysis,
-      meta: {
-        prompt_versions: result.meta.prompt_versions,
-        trace: traces,
-        metrics: buildPipelineMetrics(traces, totalDurationMs),
-      },
-    }
+    return this.orchestrator.run(enrichedField, imageAnalystRun.output)
   }
 }

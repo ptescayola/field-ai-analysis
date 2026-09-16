@@ -7,13 +7,8 @@ import {
 } from "../../domain/analysis/analysis.schema.js"
 import type { ImageAnalystOutput } from "../../domain/analysis/image-analyst.schema.js"
 import type { FieldData } from "../../domain/field/field.schema.js"
+import type { AnalysisOutput } from "../../domain/analysis/analysis.schema.js"
 import type { AgentPort } from "../../domain/ports/agent.port.js"
-import type {
-  PipelineMeta,
-  PipelineResult,
-} from "../../domain/pipeline/pipeline.schema.js"
-import { buildPipelineMetrics } from "./analysis-metrics.service.js"
-
 const IRRIGATION_QUESTION =
   "Should I irrigate this field during the next 48 hours?"
 
@@ -22,11 +17,8 @@ export class FieldAnalysisOrchestrator {
 
   async run(
     field: FieldData,
-    promptVersions: Record<string, string>,
     imageAnalysis?: ImageAnalystOutput,
-  ): Promise<PipelineResult> {
-    const pipelineStartedAt = performance.now()
-
+  ): Promise<AnalysisOutput> {
     console.error("  → Data Analyst + Risk Analyst (parallel)")
     const [dataAnalystRun, riskAnalystRun] = await Promise.all([
       this.agentPort.run({
@@ -68,14 +60,7 @@ export class FieldAnalysisOrchestrator {
       responseName: "coordinator_output",
     })
 
-    const traces = [
-      dataAnalystRun.trace,
-      riskAnalystRun.trace,
-      agronomistRun.trace,
-      coordinatorRun.trace,
-    ]
-
-    const analysis = analysisOutputSchema.parse({
+    return analysisOutputSchema.parse({
       field_id: field.field.id,
       field_name: field.field.name,
       ...coordinatorRun.output,
@@ -86,15 +71,5 @@ export class FieldAnalysisOrchestrator {
         ...(imageAnalysis ? { image_analyst: imageAnalysis } : {}),
       },
     })
-
-    const totalDurationMs = Math.round(performance.now() - pipelineStartedAt)
-
-    const meta: PipelineMeta = {
-      prompt_versions: promptVersions,
-      trace: traces,
-      metrics: buildPipelineMetrics(traces, totalDurationMs),
-    }
-
-    return { analysis, meta }
   }
 }

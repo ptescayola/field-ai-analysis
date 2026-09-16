@@ -5,7 +5,6 @@ import type {
   AgentRunParams,
   AgentRunResult,
 } from "../backend/domain/ports/agent.port.js"
-import type { AgentTrace } from "../backend/domain/pipeline/pipeline.schema.js"
 import { fieldSchema } from "../backend/domain/field/field.schema.js"
 import { FieldAnalysisOrchestrator } from "../backend/application/services/field-analysis.orchestrator.js"
 
@@ -82,22 +81,6 @@ const outputs: Record<string, unknown> = {
   },
 }
 
-function traceFor(agent: string): AgentTrace {
-  return {
-    agent,
-    model: "test-model",
-    prompt_version: "1.0.0",
-    duration_ms: 10,
-    usage: {
-      prompt_tokens: 10,
-      completion_tokens: 5,
-      total_tokens: 15,
-    },
-    input: {},
-    output: outputs[agent],
-  }
-}
-
 it("runs independent analysts in parallel and passes their outputs downstream", async () => {
   const calls: AgentRunParams<unknown>[] = []
   let releaseAnalysts!: () => void
@@ -117,14 +100,11 @@ it("runs independent analysts in parallel and passes their outputs downstream", 
 
       return {
         output: outputs[params.agentName] as T,
-        trace: traceFor(params.agentName),
       }
     },
   }
 
-  const runPromise = new FieldAnalysisOrchestrator(agentPort).run(field, {
-    coordinator: "1.0.0",
-  })
+  const runPromise = new FieldAnalysisOrchestrator(agentPort).run(field)
 
   await new Promise((resolve) => setImmediate(resolve))
   assert.deepEqual(
@@ -147,8 +127,6 @@ it("runs independent analysts in parallel and passes their outputs downstream", 
     (calls[3]?.input as { risk_analyst: unknown }).risk_analyst,
     outputs["risk-analyst"],
   )
-  assert.equal(result.analysis.field_id, "FIELD-001")
-  assert.equal(result.analysis.irrigation.should_irrigate_next_48h, true)
-  assert.equal(result.meta.metrics.total_tokens, 60)
-  assert.equal(result.meta.trace.length, 4)
+  assert.equal(result.field_id, "FIELD-001")
+  assert.equal(result.irrigation.should_irrigate_next_48h, true)
 })

@@ -1,7 +1,6 @@
 import { cors } from "hono/cors"
 import { Hono } from "hono"
 import { createApplication } from "../../composition-root.js"
-import { toAnalysisResponse } from "./analysis-response.js"
 import {
   getAllowedOrigins,
   getErrorMessage,
@@ -88,7 +87,7 @@ export function createHonoApp(): Hono {
         parsedImage,
         parsedImage.fileName,
       )
-      return c.json(toAnalysisResponse(result))
+      return c.json(result)
     } catch (error) {
       console.error("Image analysis failed", error)
       const message = getErrorMessage(error, "Image analysis failed")
@@ -107,7 +106,7 @@ export function createHonoApp(): Hono {
 
     try {
       const result = await application.analyzeField.execute(file)
-      return c.json(toAnalysisResponse(result))
+      return c.json(result)
     } catch (error) {
       console.error("Analysis failed", error)
       return c.json({ error: "Analysis failed" }, 500)

@@ -8,10 +8,10 @@ import {
   healthScoreTone,
   parseObservationMetric,
 } from "../utils/metric-visualization"
-import type { FieldData, PipelineResult, Risk } from "../types"
+import type { AnalysisOutput, FieldData, Risk } from "../types"
 
 const props = defineProps<{
-  result: PipelineResult
+  result: AnalysisOutput
   field?: FieldData | null
 }>()
 
@@ -103,7 +103,7 @@ function getAssessmentCopy(assessment: string): {
 }
 
 const dataAnalystObservations = computed(() =>
-  props.result.analysis.agents.data_analyst.observations.map((obs) => ({
+  props.result.agents.data_analyst.observations.map((obs) => ({
     ...obs,
     metricLabel: formatMetric(obs.metric),
     assessmentCopy: getAssessmentCopy(obs.assessment),
@@ -116,11 +116,11 @@ const chartableObservations = computed(() =>
 )
 
 const healthTone = computed(() =>
-  healthScoreTone(props.result.analysis.field_health_score),
+  healthScoreTone(props.result.field_health_score),
 )
 
 const imageAnalyst = computed(
-  () => props.result.analysis.agents.image_analyst ?? null,
+  () => props.result.agents.image_analyst ?? null,
 )
 
 function formatCategory(category: string): string {
@@ -230,7 +230,7 @@ function formatVegetationType(type: string): string {
       <div
         class="hero"
         :class="
-          result.analysis.irrigation.should_irrigate_next_48h
+          result.irrigation.should_irrigate_next_48h
             ? 'irrigate-yes'
             : 'irrigate-no'
         "
@@ -238,22 +238,22 @@ function formatVegetationType(type: string): string {
         <p class="eyebrow">Irrigate in the next 48h?</p>
         <p class="verdict">
           {{
-            result.analysis.irrigation.should_irrigate_next_48h ? "Yes" : "No"
+            result.irrigation.should_irrigate_next_48h ? "Yes" : "No"
           }}
         </p>
-        <p class="rationale">{{ result.analysis.main_recommendation }}</p>
+        <p class="rationale">{{ result.main_recommendation }}</p>
       </div>
 
       <div class="dashboard-scores">
         <ScoreRing
           label="Field health"
-          :value="result.analysis.field_health_score"
+          :value="result.field_health_score"
           suffix="/100"
           :tone="healthTone"
         />
         <ScoreRing
           label="Confidence"
-          :value="result.analysis.confidence * 100"
+          :value="result.confidence * 100"
           suffix="%"
           tone="neutral"
         />
@@ -264,10 +264,10 @@ function formatVegetationType(type: string): string {
 
     <section class="card summary-card">
       <h2>Summary</h2>
-      <p class="summary-text">{{ result.analysis.summary }}</p>
+      <p class="summary-text">{{ result.summary }}</p>
       <details class="explanation-details">
         <summary>Full explanation</summary>
-        <p>{{ result.analysis.explanation }}</p>
+        <p>{{ result.explanation }}</p>
       </details>
     </section>
 
@@ -304,11 +304,11 @@ function formatVegetationType(type: string): string {
       <article class="card analyst-panel">
         <h2>Risk Analyst</h2>
         <ul
-          v-if="result.analysis.agents.risk_analyst.risks.length"
+          v-if="result.agents.risk_analyst.risks.length"
           class="risks risks-visual"
         >
           <RiskMeter
-            v-for="(risk, i) in result.analysis.agents.risk_analyst.risks"
+            v-for="(risk, i) in result.agents.risk_analyst.risks"
             :key="i"
             :risk="risk"
             :label="formatRiskType(risk.type)"
@@ -325,26 +325,26 @@ function formatVegetationType(type: string): string {
           <div>
             <dt>Irrigation</dt>
             <dd>
-              {{ result.analysis.agents.agronomist.irrigation_assessment }}
+              {{ result.agents.agronomist.irrigation_assessment }}
             </dd>
           </div>
           <div>
             <dt>Stress</dt>
-            <dd>{{ result.analysis.agents.agronomist.crop_stress }}</dd>
+            <dd>{{ result.agents.agronomist.crop_stress }}</dd>
           </div>
           <div>
             <dt>Development</dt>
-            <dd>{{ result.analysis.agents.agronomist.crop_development }}</dd>
+            <dd>{{ result.agents.agronomist.crop_development }}</dd>
           </div>
           <div>
             <dt>Health</dt>
-            <dd>{{ result.analysis.agents.agronomist.plant_health }}</dd>
+            <dd>{{ result.agents.agronomist.plant_health }}</dd>
           </div>
         </dl>
         <details class="reasoning-block">
           <summary>Reasoning</summary>
           <p class="reasoning-text">
-            {{ result.analysis.agents.agronomist.reasoning }}
+            {{ result.agents.agronomist.reasoning }}
           </p>
         </details>
       </article>

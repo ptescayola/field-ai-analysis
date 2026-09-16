@@ -135,19 +135,3 @@ export interface AnalysisOutput {
   }
 }
 
-export interface PipelineResult {
-  analysis: AnalysisOutput
-  meta: {
-    prompt_versions: Record<string, string>
-    metrics: {
-      total_duration_ms: number
-      total_tokens: number
-      estimated_cost_usd: number
-      agents: Array<{
-        agent: string
-        duration_ms: number
-        usage: { total_tokens: number }
-      }>
-    }
-  }
-}

@@ -6,9 +6,9 @@ import AnalysisView from "../components/AnalysisView.vue"
 import ErrorAlert from "../components/ErrorAlert.vue"
 import ImageUploadPanel from "../components/ImageUploadPanel.vue"
 import AppLayout from "../layouts/AppLayout.vue"
-import type { PipelineResult, SelectedImage } from "../types"
+import type { AnalysisOutput, SelectedImage } from "../types"
 
-const result = ref<PipelineResult | null>(null)
+const result = ref<AnalysisOutput | null>(null)
 const analyzing = ref(false)
 const analysisError = ref<string | null>(null)
 

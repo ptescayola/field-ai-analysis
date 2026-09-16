@@ -5,23 +5,14 @@ import { formatAnalysis, formatJson } from "./format-output.js"
 
 const DEFAULT_FIELD_FILE = "field-001.json"
 
-function parseArgs(argv: string[]): {
-  fieldFile: string
-  json: boolean
-  saveTrace: boolean
-} {
+function parseArgs(argv: string[]): { fieldFile: string; json: boolean } {
   const args = argv.slice(2)
   let fieldFile = DEFAULT_FIELD_FILE
   let json = false
-  let trace = false
 
   for (const arg of args) {
     if (arg === "--json") {
       json = true
-      continue
-    }
-    if (arg === "--trace") {
-      trace = true
       continue
     }
     if (arg.startsWith("-")) {
@@ -30,28 +21,19 @@ function parseArgs(argv: string[]): {
     fieldFile = arg.endsWith(".json") ? arg : `${arg}.json`
   }
 
-  return { fieldFile, json, saveTrace: trace }
+  return { fieldFile, json }
 }
 
 async function main(): Promise<void> {
-  const {
-    fieldFile,
-    json,
-    saveTrace: shouldSaveTrace,
-  } = parseArgs(process.argv)
+  const { fieldFile, json } = parseArgs(process.argv)
 
   console.error(`Analyzing field: ${fieldFile}`)
   console.error(`Model: ${getModel()}`)
 
   const app = createApplication()
-  const result = await app.analyzeField.execute(fieldFile)
+  const analysis = await app.analyzeField.execute(fieldFile)
 
-  if (shouldSaveTrace) {
-    const tracePath = await app.traceRepository.save(result)
-    console.error(`Trace saved to ${tracePath}`)
-  }
-
-  console.log(json ? formatJson(result) : formatAnalysis(result))
+  console.log(json ? formatJson(analysis) : formatAnalysis(analysis))
 }
 
 main().catch((error: unknown) => {
