@@ -23,6 +23,46 @@ function formatRiskList(risks: AnalysisOutput["risks"]): string {
     .join("\n")
 }
 
+function formatAgronomist(
+  agronomist: AnalysisOutput["agents"]["agronomist"],
+): string[] {
+  const dose =
+    agronomist.irrigation.recommended_mm === null
+      ? ""
+      : ` — ${agronomist.irrigation.recommended_mm}mm`
+  const drivers = agronomist.crop_stress.drivers.join(", ")
+
+  const lines = [
+    `  Irrigation: ${formatLabel(agronomist.irrigation.status)}${dose} (${agronomist.irrigation.timing})`,
+    `    ${agronomist.irrigation.assessment}`,
+    `  Stress: ${formatLabel(agronomist.crop_stress.level)}${drivers ? ` — ${drivers}` : ""}`,
+    `  Development: ${formatLabel(agronomist.crop_development.stage_assessment)}`,
+    `  Health: ${formatLabel(agronomist.plant_health.rating)}`,
+    `  Confidence: ${formatPercent(agronomist.confidence)}`,
+  ]
+
+  if (agronomist.actions.length > 0) {
+    lines.push(
+      "",
+      "  Actions",
+      ...agronomist.actions.map(
+        (action) =>
+          `    • [${action.priority}] ${action.action} (${action.window})\n      ${action.rationale}`,
+      ),
+    )
+  }
+
+  if (agronomist.data_gaps.length > 0) {
+    lines.push(
+      "",
+      "  Data gaps",
+      ...agronomist.data_gaps.map((gap) => `    • ${gap}`),
+    )
+  }
+
+  return lines
+}
+
 export function formatAnalysis(analysis: AnalysisOutput): string {
   const lines = [
     "Field AI Analysis",
@@ -61,10 +101,7 @@ export function formatAnalysis(analysis: AnalysisOutput): string {
     "",
     "Interpretation — Agronomist",
     "---------------------------",
-    `  Irrigation: ${analysis.agents.agronomist.irrigation_assessment}`,
-    `  Stress: ${analysis.agents.agronomist.crop_stress}`,
-    `  Development: ${analysis.agents.agronomist.crop_development}`,
-    `  Health: ${analysis.agents.agronomist.plant_health}`,
+    ...formatAgronomist(analysis.agents.agronomist),
     "",
     "Risks — Risk Analyst",
     "--------------------",

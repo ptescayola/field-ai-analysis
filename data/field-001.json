@@ -55,7 +55,7 @@
   },
   "soil": {
     "type": "sandy_loam",
-    "moisture_percent": 67,
+    "moisture_percent": 26,
     "temperature_c": 18.4,
     "ph": 5.8
   },
@@ -71,10 +71,14 @@
   },
   "observations": [
     "Parcel boundary from OpenStreetMap (way 1318910132): landuse=vineyard, crop=grape; no finca name or grape variety in the source",
-    "Location: Cuíña, Tremoedo, Vilanova de Arousa, comarca O Salnés (Pontevedra)",
-    "Soil, weather, NDVI, planting date, and agronomic notes below are synthetic demo data, not verified for this polygon",
-    "Canopy remains vigorous after several days of Atlantic rainfall (demo scenario)",
-    "Minor mildew symptoms detected in two low-ventilation rows (demo scenario)",
-    "No water stress observed (demo scenario)"
+    "Location: Cuíña, Tremoedo, Vilanova de Arousa, comarca O Salnés (Pontevedra), inside the Rías Baixas denomination",
+    "Every soil, weather, NDVI and scouting value below is synthetic demo data, not verified for this polygon",
+    "Rain-fed vineyard with no irrigation system installed, so water management is limited to drainage and canopy work",
+    "Trained on traditional overhead pergola at roughly 90% canopy cover, which leaves the inner rows poorly ventilated",
+    "Soil moisture read at 30 cm over granitic subsoil; effective rooting depth close to 60 cm and the profile has sat at or above field capacity for five days",
+    "36 mm of Atlantic rainfall spread over the last five days, with leaf wetness persisting until mid-morning",
+    "Downy mildew lesions on about 5% of leaves in the two lowest-ventilation rows; last copper application 11 days ago",
+    "Berry sampling three days ago gave 19.5 °Brix, so harvest is expected within 10 to 14 days",
+    "No wilting or midday leaf folding anywhere in the plot"
   ]
 }

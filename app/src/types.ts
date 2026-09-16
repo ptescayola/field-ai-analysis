@@ -102,6 +102,44 @@ export interface ImageAnalystOutput {
   limitations: string
 }
 
+export type IrrigationStatus = "deficit" | "adequate" | "excess" | "unknown"
+export type StressLevel = "none" | "mild" | "moderate" | "severe"
+export type StageAssessment = "behind" | "on_track" | "ahead" | "unknown"
+export type PlantHealthRating = "poor" | "fair" | "good" | "excellent"
+
+export interface AgronomicAction {
+  action: string
+  window: string
+  priority: "low" | "medium" | "high"
+  rationale: string
+}
+
+export interface AgronomistOutput {
+  irrigation: {
+    status: IrrigationStatus
+    recommended_mm: number | null
+    timing: string
+    assessment: string
+  }
+  crop_stress: {
+    level: StressLevel
+    drivers: string[]
+    assessment: string
+  }
+  crop_development: {
+    stage_assessment: StageAssessment
+    assessment: string
+  }
+  plant_health: {
+    rating: PlantHealthRating
+    assessment: string
+  }
+  actions: AgronomicAction[]
+  data_gaps: string[]
+  confidence: number
+  reasoning: string
+}
+
 export interface AnalysisOutput {
   field_id: string
   field_name: string
@@ -123,15 +161,8 @@ export interface AnalysisOutput {
         assessment: string
       }>
     }
-    agronomist: {
-      irrigation_assessment: string
-      crop_stress: string
-      crop_development: string
-      plant_health: string
-      reasoning: string
-    }
+    agronomist: AgronomistOutput
     risk_analyst: { risks: Risk[] }
     image_analyst?: ImageAnalystOutput
   }
 }
-

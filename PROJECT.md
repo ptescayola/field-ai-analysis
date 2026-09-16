@@ -90,9 +90,12 @@ aporta evidencias, severidad y confianza.
 
 ### Agronomist
 
-Combina los datos de la parcela con las observaciones del Data Analyst y los
-interpreta desde una perspectiva agronómica. Valora el desarrollo del cultivo,
-la salud de las plantas y la necesidad de riego.
+Combina los datos de la parcela con las observaciones del Data Analyst, los
+riesgos del Risk Analyst y, si existe, el análisis de imagen. Valora el
+desarrollo del cultivo, la salud de las plantas y la necesidad de riego
+aplicando umbrales de humedad por tipo de suelo, la sensibilidad de la etapa
+fenológica y la previsión de lluvia. Devuelve niveles acotados, una dosis de
+riego orientativa, hasta tres acciones priorizadas y los datos que le faltan.
 
 ### Coordinator
 
@@ -144,7 +147,7 @@ adaptadores simulados.
 
 ### Decisiones técnicas
 
-- Los prompts de los agentes están separados del código y versionados.
+- Los prompts de los agentes están separados del código (`agents/*.md`).
 - Las respuestas del modelo se validan con esquemas antes de entrar en el
   pipeline.
 - Los agentes independientes se ejecutan en paralelo para reducir la latencia.

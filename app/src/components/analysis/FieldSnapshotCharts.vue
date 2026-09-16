@@ -2,6 +2,16 @@
 import { computed } from "vue"
 import { useWeatherForecast } from "../../composables/useWeatherForecast"
 import type { FieldData } from "../../types"
+
+type KeyMetric = {
+  label: string
+  value: string
+  fillPct: number
+  tone: "moisture" | "rain" | "vegetation" | "temp"
+  sub: string
+  subTone?: "up" | "down"
+}
+
 const props = defineProps<{
   field: FieldData
 }>()
@@ -53,7 +63,7 @@ const ndviDeltaLabel = computed(() => {
   return `${sign}${d.toFixed(2)} vs last week`
 })
 
-const keyMetrics = computed(() => {
+const keyMetrics = computed((): KeyMetric[] => {
   const rainNext =
     rainNext7Days.value ?? props.field.weather.rain_last_7_days_mm
   const rainSub =
@@ -79,8 +89,7 @@ const keyMetrics = computed(() => {
       sub: soilMoistureStatus(props.field.soil.moisture_percent),
     },
     {
-      label:
-        rainNext7Days.value !== null ? "Rain next 7d" : "Rain last 7d",
+      label: rainNext7Days.value !== null ? "Rain next 7d" : "Rain last 7d",
       value: `${rainNext} mm`,
       fillPct: clampPct(rainNext, 80),
       tone: "rain",
@@ -144,9 +153,7 @@ const keyMetrics = computed(() => {
           v-if="metric.sub"
           class="key-metric-sub"
           :class="
-            metric.subTone
-              ? `key-metric-sub--${metric.subTone}`
-              : undefined
+            metric.subTone ? `key-metric-sub--${metric.subTone}` : undefined
           "
         >
           {{ metric.sub }}
@@ -159,9 +166,9 @@ const keyMetrics = computed(() => {
         <div class="ndvi-card-head">
           <span class="snapshot-label">NDVI trend</span>
           <p class="ndvi-info">
-            Normalized Difference Vegetation Index (0–1) from satellite
-            imagery. Higher values mean denser green vegetation; bars show
-            last week vs now.
+            Normalized Difference Vegetation Index (0–1) from satellite imagery.
+            Higher values mean denser green vegetation; bars show last week vs
+            now.
           </p>
         </div>
         <div class="ndvi-compare">

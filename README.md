@@ -38,14 +38,14 @@ field-ai-analysis/
 Field snapshot + live weather (Open-Meteo)
     │
     ├─ Data Analyst ──┐
-    └─ Risk Analyst ──┤ (parallel)
+    └─ Risk Analyst ──┤
                       ▼
                  Agronomist
                       ▼
                  Coordinator → AnalysisOutput
 ```
 
-Agent prompts live in `agents/*.md` (versioned via `agents/manifest.json`).
+Agent prompts live in `agents/*.md`.
 
 ## Setup
 

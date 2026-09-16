@@ -13,8 +13,7 @@ export class OpenAIAgentAdapter implements AgentPort {
 
   async run<T>(params: AgentRunParams<T>): Promise<AgentRunResult<T>> {
     const { agentName, input, outputSchema, responseName } = params
-    const { content: systemPrompt } =
-      await this.promptRepository.getPrompt(agentName)
+    const systemPrompt = await this.promptRepository.getPrompt(agentName)
     const client = getOpenAIClient()
     const model = getModel()
 

@@ -120,10 +120,15 @@
   },
   "observations": [
     "Parcel boundary from OpenStreetMap (way 1249677620): landuse=orchard, trees=olive_trees; olive cultivar not recorded in the source",
-    "Location: Fontanar, Pozo Alcón, provincia de Jaén, Andalucía (not the urban Campiña immediately around Jaén city)",
-    "Soil, weather, NDVI, planting date, and agronomic notes below are synthetic demo data, not verified for this polygon",
-    "Trees show mild midday leaf folding on the south-facing slope (demo scenario)",
-    "Drip irrigation emitters were checked and are operating normally (demo scenario)",
-    "No signs of olive fruit fly detected during the latest inspection (demo scenario)"
+    "Location: Fontanar, Pozo Alcón, provincia de Jaén, on the edge of the Sierra de Cazorla (not the urban Campiña immediately around Jaén city)",
+    "Soil, weather, NDVI, planting date and scouting values are synthetic demo data, not verified for this polygon",
+    "Intensive hedgerow grove at about 300 trees per hectare with 45% canopy cover, so NDVI reads lower here than it would over a continuous canopy",
+    "Drip irrigation with two 4 L/h emitters per tree; a three-hour set applies about 8 mm across the plot, and the emitters were checked and are operating normally",
+    "Last irrigation six days ago with 10 mm applied, and no rain has fallen in 32 days",
+    "Soil moisture read at 40 cm; the clay loam releases water slowly, so a reading near the wilting point takes several sets to recover",
+    "Managed under regulated deficit irrigation: mild stress is accepted after pit hardening, which finished about three weeks ago, but the fruit-filling stage now under way is protected because it sets oil yield",
+    "Mild midday leaf folding on the south-facing slope that recovers after sunset",
+    "The inter-row cover crop was mown at the end of spring and is now dry, so it no longer competes for water",
+    "No olive fruit fly captures in the last two McPhail trap readings"
   ]
 }

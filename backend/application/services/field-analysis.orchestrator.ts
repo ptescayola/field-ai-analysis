@@ -5,6 +5,7 @@ import {
   dataAnalystOutputSchema,
   riskAnalystOutputSchema,
 } from "../../domain/analysis/analysis.schema.js"
+import { deriveFieldMetrics } from "../../domain/field/field-metrics.js"
 import type { ImageAnalystOutput } from "../../domain/analysis/image-analyst.schema.js"
 import type { FieldData } from "../../domain/field/field.schema.js"
 import type { AnalysisOutput } from "../../domain/analysis/analysis.schema.js"
@@ -19,7 +20,10 @@ export class FieldAnalysisOrchestrator {
     field: FieldData,
     imageAnalysis?: ImageAnalystOutput,
   ): Promise<AnalysisOutput> {
-    console.error("  → Data Analyst + Risk Analyst (parallel)")
+    const derivedMetrics = deriveFieldMetrics(field)
+    const imageInput = imageAnalysis ? { image_analyst: imageAnalysis } : {}
+
+    console.error("  → Data Analyst + Risk Analyst")
     const [dataAnalystRun, riskAnalystRun] = await Promise.all([
       this.agentPort.run({
         agentName: "data-analyst",
@@ -40,7 +44,10 @@ export class FieldAnalysisOrchestrator {
       agentName: "agronomist",
       input: {
         field_data: field,
+        derived_metrics: derivedMetrics,
         data_analyst: dataAnalystRun.output,
+        risk_analyst: riskAnalystRun.output,
+        ...imageInput,
       },
       outputSchema: agronomistOutputSchema,
       responseName: "agronomist_output",
@@ -51,9 +58,11 @@ export class FieldAnalysisOrchestrator {
       agentName: "coordinator",
       input: {
         field_data: field,
+        derived_metrics: derivedMetrics,
         data_analyst: dataAnalystRun.output,
         agronomist: agronomistRun.output,
         risk_analyst: riskAnalystRun.output,
+        ...imageInput,
         question: IRRIGATION_QUESTION,
       },
       outputSchema: coordinatorOutputSchema,
@@ -68,7 +77,7 @@ export class FieldAnalysisOrchestrator {
         data_analyst: dataAnalystRun.output,
         agronomist: agronomistRun.output,
         risk_analyst: riskAnalystRun.output,
-        ...(imageAnalysis ? { image_analyst: imageAnalysis } : {}),
+        ...imageInput,
       },
     })
   }

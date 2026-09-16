@@ -7,7 +7,10 @@ function syncHeaderOffset(): void {
   if (!header) return
 
   const height = header.getBoundingClientRect().height
-  document.documentElement.style.setProperty("--app-header-offset", `${height}px`)
+  document.documentElement.style.setProperty(
+    "--app-header-offset",
+    `${height}px`,
+  )
 }
 
 export function useAppHeaderOffset(): void {

@@ -8,7 +8,15 @@ import {
   healthScoreTone,
   parseObservationMetric,
 } from "../utils/metric-visualization"
-import type { AnalysisOutput, FieldData, Risk } from "../types"
+import type {
+  AnalysisOutput,
+  FieldData,
+  IrrigationStatus,
+  PlantHealthRating,
+  Risk,
+  StageAssessment,
+  StressLevel,
+} from "../types"
 
 const props = defineProps<{
   result: AnalysisOutput
@@ -119,9 +127,89 @@ const healthTone = computed(() =>
   healthScoreTone(props.result.field_health_score),
 )
 
-const imageAnalyst = computed(
-  () => props.result.agents.image_analyst ?? null,
-)
+const imageAnalyst = computed(() => props.result.agents.image_analyst ?? null)
+
+const IRRIGATION_TONES: Record<IrrigationStatus, string> = {
+  deficit: "chip-warn",
+  adequate: "chip-good",
+  excess: "chip-bad",
+  unknown: "chip-muted",
+}
+
+const STRESS_TONES: Record<StressLevel, string> = {
+  none: "chip-good",
+  mild: "chip-muted",
+  moderate: "chip-warn",
+  severe: "chip-bad",
+}
+
+const STAGE_TONES: Record<StageAssessment, string> = {
+  behind: "chip-warn",
+  on_track: "chip-good",
+  ahead: "chip-good",
+  unknown: "chip-muted",
+}
+
+const HEALTH_TONES: Record<PlantHealthRating, string> = {
+  poor: "chip-bad",
+  fair: "chip-warn",
+  good: "chip-good",
+  excellent: "chip-good",
+}
+
+const agronomist = computed(() => props.result.agents.agronomist)
+
+type AgronomistFacet = {
+  label: string
+  value: string
+  tone: string
+  extra: string | null
+  note: string | null
+  assessment: string
+}
+
+const agronomistFacets = computed((): AgronomistFacet[] => {
+  const { irrigation, crop_stress, crop_development, plant_health } =
+    agronomist.value
+
+  return [
+    {
+      label: "Irrigation",
+      value: formatRiskType(irrigation.status),
+      tone: IRRIGATION_TONES[irrigation.status],
+      extra:
+        irrigation.recommended_mm === null
+          ? null
+          : `${irrigation.recommended_mm} mm`,
+      note: irrigation.timing,
+      assessment: irrigation.assessment,
+    },
+    {
+      label: "Stress",
+      value: formatRiskType(crop_stress.level),
+      tone: STRESS_TONES[crop_stress.level],
+      extra: null,
+      note: crop_stress.drivers.join(" · ") || null,
+      assessment: crop_stress.assessment,
+    },
+    {
+      label: "Development",
+      value: formatRiskType(crop_development.stage_assessment),
+      tone: STAGE_TONES[crop_development.stage_assessment],
+      extra: null,
+      note: null,
+      assessment: crop_development.assessment,
+    },
+    {
+      label: "Health",
+      value: formatRiskType(plant_health.rating),
+      tone: HEALTH_TONES[plant_health.rating],
+      extra: null,
+      note: null,
+      assessment: plant_health.assessment,
+    },
+  ]
+})
 
 function formatCategory(category: string): string {
   return formatRiskType(category)
@@ -237,9 +325,7 @@ function formatVegetationType(type: string): string {
       >
         <p class="eyebrow">Irrigate in the next 48h?</p>
         <p class="verdict">
-          {{
-            result.irrigation.should_irrigate_next_48h ? "Yes" : "No"
-          }}
+          {{ result.irrigation.should_irrigate_next_48h ? "Yes" : "No" }}
         </p>
         <p class="rationale">{{ result.main_recommendation }}</p>
       </div>
@@ -270,6 +356,55 @@ function formatVegetationType(type: string): string {
         <p>{{ result.explanation }}</p>
       </details>
     </section>
+
+    <article class="card agronomist-panel">
+      <div class="agronomist-header">
+        <h2>Agronomist</h2>
+        <span class="conf">
+          Confidence {{ formatPercent(agronomist.confidence) }}
+        </span>
+      </div>
+
+      <div class="facets">
+        <div v-for="facet in agronomistFacets" :key="facet.label" class="facet">
+          <p class="facet-label">{{ facet.label }}</p>
+          <p class="facet-head">
+            <span class="chip" :class="facet.tone">{{ facet.value }}</span>
+            <span v-if="facet.extra" class="facet-extra">
+              {{ facet.extra }}
+            </span>
+          </p>
+          <p v-if="facet.note" class="facet-note">{{ facet.note }}</p>
+          <p class="facet-assessment">{{ facet.assessment }}</p>
+        </div>
+      </div>
+
+      <div v-if="agronomist.actions.length" class="actions">
+        <h3 class="panel-title">Recommended actions</h3>
+        <ol class="action-list">
+          <li v-for="(action, i) in agronomist.actions" :key="i">
+            <div class="action-head">
+              <span :class="['badge', severityClass(action.priority)]">
+                {{ action.priority }}
+              </span>
+              <span class="action-text">{{ action.action }}</span>
+              <span class="action-window">{{ action.window }}</span>
+            </div>
+            <p class="action-rationale">{{ action.rationale }}</p>
+          </li>
+        </ol>
+      </div>
+
+      <p v-if="agronomist.data_gaps.length" class="data-gaps">
+        <span class="data-gaps-label">Missing data</span>
+        {{ agronomist.data_gaps.join(" · ") }}
+      </p>
+
+      <div class="reasoning-block">
+        <h3 class="panel-title">Reasoning</h3>
+        <p class="reasoning-text">{{ agronomist.reasoning }}</p>
+      </div>
+    </article>
 
     <section class="analysts-row">
       <article class="card analyst-panel">
@@ -315,38 +450,6 @@ function formatVegetationType(type: string): string {
           />
         </ul>
         <p v-else class="empty">None identified</p>
-      </article>
-    </section>
-
-    <section class="agents">
-      <article class="card agent">
-        <h3>Agronomist</h3>
-        <dl>
-          <div>
-            <dt>Irrigation</dt>
-            <dd>
-              {{ result.agents.agronomist.irrigation_assessment }}
-            </dd>
-          </div>
-          <div>
-            <dt>Stress</dt>
-            <dd>{{ result.agents.agronomist.crop_stress }}</dd>
-          </div>
-          <div>
-            <dt>Development</dt>
-            <dd>{{ result.agents.agronomist.crop_development }}</dd>
-          </div>
-          <div>
-            <dt>Health</dt>
-            <dd>{{ result.agents.agronomist.plant_health }}</dd>
-          </div>
-        </dl>
-        <details class="reasoning-block">
-          <summary>Reasoning</summary>
-          <p class="reasoning-text">
-            {{ result.agents.agronomist.reasoning }}
-          </p>
-        </details>
       </article>
     </section>
   </div>
@@ -511,11 +614,6 @@ function formatVegetationType(type: string): string {
   line-height: 1.6;
 }
 
-.highlight {
-  border-color: var(--green-light);
-  background: linear-gradient(135deg, #fff 0%, var(--surface-muted) 100%);
-}
-
 .risks {
   list-style: none;
   margin: 0;
@@ -529,13 +627,6 @@ function formatVegetationType(type: string): string {
   margin: 0.35rem 0 0;
   font-size: 0.9rem;
   color: var(--text-muted);
-}
-
-.risk-head {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
 }
 
 .badge {
@@ -572,23 +663,160 @@ function formatVegetationType(type: string): string {
   font-size: 0.9rem;
 }
 
-.agents {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem;
+.agronomist-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
 }
 
-.agent h3 {
-  margin: 0 0 0.75rem;
-  font-size: 1rem;
+.agronomist-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.facets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.85rem;
+}
+
+.facet {
+  border-left: 2px solid var(--border);
+  padding-left: 0.7rem;
+}
+
+.facet-label {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.facet-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 0.3rem 0 0;
+}
+
+.chip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+}
+
+.chip-good {
+  background: var(--green-pale);
   color: var(--green);
 }
 
-.agent ul {
+.chip-warn {
+  background: var(--amber-pale);
+  color: var(--amber-deep);
+}
+
+.chip-bad {
+  background: var(--red-pale);
+  color: var(--red);
+}
+
+.chip-muted {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}
+
+.facet-extra {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.facet-note {
+  margin: 0.3rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--chart-secondary);
+}
+
+.facet-assessment {
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.actions {
+  margin-top: 1.1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+.panel-title {
+  margin: 0 0 0.6rem;
+  font-family: var(--font);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.action-list {
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 0.88rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.action-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.action-text {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.action-window {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.action-rationale {
+  margin: 0.2rem 0 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.data-gaps {
+  margin-top: 0.9rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.data-gaps-label {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.68rem;
+  color: var(--amber-deep);
+  margin-right: 0.35rem;
 }
 
 .observations li {
@@ -634,11 +862,6 @@ function formatVegetationType(type: string): string {
   font-weight: 600;
 }
 
-.assessment-hint {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
 .tone-neutral {
   background: var(--green-pale);
   color: var(--green);
@@ -654,60 +877,10 @@ function formatVegetationType(type: string): string {
   color: var(--amber-deep);
 }
 
-.agent li {
-  padding: 0.3rem 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.agent li:last-child {
-  border-bottom: none;
-}
-
-.agent em {
-  color: var(--text-muted);
-  font-style: normal;
-}
-
-.agent dl {
-  margin: 0;
-  font-size: 0.88rem;
-}
-
-.agent dl div {
-  margin-bottom: 0.6rem;
-}
-
-.agent dt {
-  font-weight: 600;
-  color: var(--green);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.agent dd {
-  margin: 0.15rem 0 0;
-  color: var(--text-muted);
-}
-
 .reasoning-block {
   margin-top: 1rem;
   padding-top: 0.85rem;
   border-top: 1px solid var(--border);
-}
-
-.reasoning-block summary {
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--green);
-  list-style: none;
-}
-
-.reasoning-block summary::-webkit-details-marker {
-  display: none;
 }
 
 .reasoning-text {
@@ -715,11 +888,6 @@ function formatVegetationType(type: string): string {
   font-size: 0.88rem;
   line-height: 1.6;
   color: var(--text);
-}
-
-.compact li {
-  border: none;
-  padding: 0.25rem 0;
 }
 
 .image-agent {

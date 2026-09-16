@@ -29,7 +29,7 @@
   "crop": {
     "type": "tomato",
     "variety": "tomata_de_penjar",
-    "planting_date": "2026-04-20",
+    "planting_date": "2026-06-25",
     "growth_stage": "fruit_development"
   },
   "soil": {
@@ -49,8 +49,14 @@
     "ndvi_previous_week": 0.71
   },
   "observations": [
-    "Slight leaf curling observed during the hottest hours",
-    "Fruit set is uniform but soil dries quickly between irrigation cycles",
-    "No visible pests reported"
+    "Parcel boundary digitised from OpenStreetMap; soil, weather, NDVI and scouting values are synthetic demo data",
+    "Drip irrigation with 2 L/h emitters every 0.5 m on 1.5 m rows, which delivers about 2.5 mm per hour of operation",
+    "Last irrigation four days ago with 12 mm applied; the cycle before that was eight days ago",
+    "Soil moisture read at 20 cm; the calcareous loam is shallow, with effective rooting depth near 40 cm over a caliche layer, so the plot holds little reserve even at a comfortable reading",
+    "Leaf curling during the hottest hours that recovers fully by early evening",
+    "Fruit set is uniform, with six to seven fruits per truss across the first four trusses",
+    "Blossom-end rot on about 3% of fruit in the sandiest corner of the plot",
+    "Yellow sticky traps show fewer than five whiteflies per trap per week and no other pest activity",
+    "Grown for hanging storage as tomata de penjar, so late-season over-irrigation costs skin thickness and shelf life"
   ]
 }

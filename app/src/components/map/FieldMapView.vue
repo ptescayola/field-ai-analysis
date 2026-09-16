@@ -16,16 +16,11 @@ const emit = defineEmits<{
   "select-field": [file: string]
 }>()
 
-const {
-  containerRef,
-  loading,
-  loadError,
-  basemapMode,
-  setBasemapMode,
-} = useFieldMap({
-  selectedFile: () => props.selectedFile,
-  onSelectField: (file) => emit("select-field", file),
-})
+const { containerRef, loading, loadError, basemapMode, setBasemapMode } =
+  useFieldMap({
+    selectedFile: () => props.selectedFile,
+    onSelectField: (file) => emit("select-field", file),
+  })
 </script>
 
 <template>
@@ -41,11 +36,7 @@ const {
     </div>
 
     <div class="field-map-canvas-wrap">
-      <div
-        class="field-map-basemap"
-        role="group"
-        aria-label="Basemap"
-      >
+      <div class="field-map-basemap" role="group" aria-label="Basemap">
         <button
           type="button"
           class="field-map-basemap-btn"

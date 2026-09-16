@@ -20,11 +20,59 @@ export const dataAnalystOutputSchema = z.object({
   observations: z.array(observationSchema),
 })
 
+export const irrigationStatusSchema = z.enum([
+  "deficit",
+  "adequate",
+  "excess",
+  "unknown",
+])
+
+export const stressLevelSchema = z.enum(["none", "mild", "moderate", "severe"])
+
+export const stageAssessmentSchema = z.enum([
+  "behind",
+  "on_track",
+  "ahead",
+  "unknown",
+])
+
+export const plantHealthRatingSchema = z.enum([
+  "poor",
+  "fair",
+  "good",
+  "excellent",
+])
+
+export const agronomicActionSchema = z.object({
+  action: z.string(),
+  window: z.string(),
+  priority: severitySchema,
+  rationale: z.string(),
+})
+
 export const agronomistOutputSchema = z.object({
-  irrigation_assessment: z.string(),
-  crop_stress: z.string(),
-  crop_development: z.string(),
-  plant_health: z.string(),
+  irrigation: z.object({
+    status: irrigationStatusSchema,
+    recommended_mm: z.number().nullable(),
+    timing: z.string(),
+    assessment: z.string(),
+  }),
+  crop_stress: z.object({
+    level: stressLevelSchema,
+    drivers: z.array(z.string()),
+    assessment: z.string(),
+  }),
+  crop_development: z.object({
+    stage_assessment: stageAssessmentSchema,
+    assessment: z.string(),
+  }),
+  plant_health: z.object({
+    rating: plantHealthRatingSchema,
+    assessment: z.string(),
+  }),
+  actions: z.array(agronomicActionSchema),
+  data_gaps: z.array(z.string()),
+  confidence: z.number().min(0).max(1),
   reasoning: z.string(),
 })
 
@@ -63,6 +111,11 @@ export type Severity = z.infer<typeof severitySchema>
 export type Risk = z.infer<typeof riskSchema>
 export type Observation = z.infer<typeof observationSchema>
 export type DataAnalystOutput = z.infer<typeof dataAnalystOutputSchema>
+export type IrrigationStatus = z.infer<typeof irrigationStatusSchema>
+export type StressLevel = z.infer<typeof stressLevelSchema>
+export type StageAssessment = z.infer<typeof stageAssessmentSchema>
+export type PlantHealthRating = z.infer<typeof plantHealthRatingSchema>
+export type AgronomicAction = z.infer<typeof agronomicActionSchema>
 export type AgronomistOutput = z.infer<typeof agronomistOutputSchema>
 export type RiskAnalystOutput = z.infer<typeof riskAnalystOutputSchema>
 export type AnalysisOutput = z.infer<typeof analysisOutputSchema>

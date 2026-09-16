@@ -1,12 +1,7 @@
 import type { ZodType } from "zod"
 
-export interface LoadedPrompt {
-  content: string
-  version: string
-}
-
 export interface PromptRepository {
-  getPrompt(agentName: string): Promise<LoadedPrompt>
+  getPrompt(agentName: string): Promise<string>
 }
 
 export interface AgentRunResult<T> {

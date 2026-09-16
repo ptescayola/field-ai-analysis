@@ -54,10 +54,35 @@ const outputs: Record<string, unknown> = {
     ],
   },
   agronomist: {
-    irrigation_assessment: "Irrigation is advisable",
-    crop_stress: "Moderate",
-    crop_development: "On track",
-    plant_health: "Generally healthy",
+    irrigation: {
+      status: "deficit",
+      recommended_mm: 18,
+      timing: "Within the next 24h",
+      assessment: "Soil moisture sits below the loam comfort range.",
+    },
+    crop_stress: {
+      level: "moderate",
+      drivers: ["low soil moisture"],
+      assessment: "Fruit development is sensitive to deficit.",
+    },
+    crop_development: {
+      stage_assessment: "on_track",
+      assessment: "Canopy matches the expected stage.",
+    },
+    plant_health: {
+      rating: "good",
+      assessment: "No disease signs reported.",
+    },
+    actions: [
+      {
+        action: "Apply 18 mm of irrigation",
+        window: "next 24h",
+        priority: "high",
+        rationale: "Deficit plus no rain in the forecast.",
+      },
+    ],
+    data_gaps: [],
+    confidence: 0.8,
     reasoning: "Soil moisture is low",
   },
   coordinator: {
@@ -119,13 +144,17 @@ it("runs independent analysts in parallel and passes their outputs downstream", 
     calls.map((call) => call.agentName),
     ["data-analyst", "risk-analyst", "agronomist", "coordinator"],
   )
+  const agronomistInput = calls[2]?.input as {
+    data_analyst: unknown
+    risk_analyst: unknown
+    derived_metrics: { ndvi_trend: string }
+  }
+  assert.deepEqual(agronomistInput.data_analyst, outputs["data-analyst"])
+  assert.deepEqual(agronomistInput.risk_analyst, outputs["risk-analyst"])
+  assert.equal(agronomistInput.derived_metrics.ndvi_trend, "falling")
   assert.deepEqual(
-    (calls[2]?.input as { data_analyst: unknown }).data_analyst,
-    outputs["data-analyst"],
-  )
-  assert.deepEqual(
-    (calls[3]?.input as { risk_analyst: unknown }).risk_analyst,
-    outputs["risk-analyst"],
+    (calls[3]?.input as { agronomist: unknown }).agronomist,
+    outputs["agronomist"],
   )
   assert.equal(result.field_id, "FIELD-001")
   assert.equal(result.irrigation.should_irrigate_next_48h, true)

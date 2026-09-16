@@ -105,12 +105,12 @@
   "crop": {
     "type": "unspecified",
     "variety": "unspecified",
-    "planting_date": "2026-05-20",
+    "planting_date": "2026-07-08",
     "growth_stage": "silking"
   },
   "soil": {
     "type": "sandy_loam",
-    "moisture_percent": 18,
+    "moisture_percent": 11,
     "temperature_c": 28.5,
     "ph": 6.4
   },
@@ -126,10 +126,14 @@
   },
   "observations": [
     "Parcel boundary from OpenStreetMap (way 691263779): landuse=farmland; crop type not recorded in the source",
-    "Location: near Mollerussa, comarca Pla d'Urgell, Lleida, Catalunya",
-    "Soil, weather, NDVI, planting date, growth stage, and agronomic notes below are synthetic demo data (irrigated maize stress scenario), not verified for this polygon",
-    "Visible leaf rolling and wilting in the central sector (demo scenario)",
-    "Spider mite activity reported on lower leaves (demo scenario)",
-    "Irrigation system has been offline for four days due to pump maintenance (demo scenario)"
+    "Location: near Mollerussa, comarca Pla d'Urgell, Lleida, inside the Canal d'Urgell irrigation district",
+    "Soil, weather, NDVI, planting date, growth stage and scouting values are synthetic demo data describing irrigated maize under heat stress, not verified for this polygon",
+    "The field agronomist identifies the crop as irrigated maize sown as a short-cycle second crop and now at silking, the stage most sensitive to water deficit, where a week of stress can cost 30 to 50% of grain yield",
+    "Sprinkler irrigation on an 8-day Canal d'Urgell rotation; the pump has been offline four days for maintenance and the plot has already missed one turn",
+    "A full sprinkler pass applies about 35 mm over 12 hours, and the pump repair is scheduled for tomorrow",
+    "Soil moisture read at 30 cm; the sandy loam holds little water, effective rooting depth is 80 cm, and the profile was already drawn down before the outage",
+    "Leaf rolling from mid-morning onwards across roughly 3 ha in the central sector, and it is no longer relieved overnight",
+    "Tassels emerged six days ago and silks are visible on about 70% of plants, with early silk desiccation on the worst rows",
+    "Spider mite colonies on the lower leaves of the border rows, favoured by the dust and heat"
   ]
 }
