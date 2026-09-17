@@ -24,9 +24,10 @@ function formatRain(mm: number): string {
     <p v-else-if="error" class="forecast-state error">{{ error }}</p>
     <ul v-else-if="forecast" class="forecast-strip">
       <li
-        v-for="day in forecast.days"
+        v-for="(day, index) in forecast.days"
         :key="day.date"
-        class="forecast-day"
+        class="forecast-day ui-enter-stagger ui-enter-stagger--forecast-day"
+        :style="{ '--ui-enter-i': index }"
         :title="getWeatherDescription(day.weather_code)"
       >
         <span class="forecast-date">{{ formatForecastDay(day.date) }}</span>
@@ -57,6 +58,12 @@ h3 {
   color: var(--red);
 }
 
+.forecast {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
 .forecast-strip {
   margin: 0;
   padding: 0;
@@ -64,13 +71,18 @@ h3 {
   display: flex;
   align-items: stretch;
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
 }
 
 .forecast-day {
   flex: 1 1 0;
-  min-width: 4.5rem;
+  min-width: 0;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -78,7 +90,6 @@ h3 {
   gap: 0.3rem;
   padding: 0.35rem 0.5rem;
   text-align: center;
-  border-right: 1px solid var(--border);
 }
 
 .forecast-day:last-child {

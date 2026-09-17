@@ -84,21 +84,26 @@ const fieldDataTiles = computed((): FieldDataTileModel[] => {
 </script>
 
 <template>
-  <section class="panel">
+  <section class="panel ui-enter ui-enter--panel">
     <h2>Field data</h2>
     <div class="grid">
-      <FieldDataTile
-        v-for="tile in fieldDataTiles"
+      <div
+        v-for="(tile, index) in fieldDataTiles"
         :key="tile.id"
-        :label="tile.label"
-        :highlight="tile.highlight"
-        :footer="tile.footer"
-        :capitalize-highlight="tile.capitalizeHighlight"
-        :capitalize-footer="tile.capitalizeFooter"
-      />
+        class="grid-tile ui-enter-stagger"
+        :style="{ '--ui-enter-i': index }"
+      >
+        <FieldDataTile
+          :label="tile.label"
+          :highlight="tile.highlight"
+          :footer="tile.footer"
+          :capitalize-highlight="tile.capitalizeHighlight"
+          :capitalize-footer="tile.capitalizeFooter"
+        />
+      </div>
     </div>
 
-    <div class="forecast-section">
+    <div class="forecast-section ui-enter ui-enter--forecast-block">
       <WeatherForecastView
         :forecast="forecast"
         :loading="loading"
@@ -130,6 +135,7 @@ const fieldDataTiles = computed((): FieldDataTileModel[] => {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.25rem 1.5rem;
+  overflow-x: clip;
 }
 
 h2 {
@@ -148,14 +154,16 @@ h3 {
   gap: 0.75rem;
 }
 
+.grid-tile {
+  min-width: 0;
+}
+
 .forecast-section {
   margin-top: 1rem;
   padding-top: 0.85rem;
   border-top: 1px solid var(--border);
-}
-
-.forecast-section :deep(.forecast-strip) {
-  margin: 0 -0.25rem;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .source {

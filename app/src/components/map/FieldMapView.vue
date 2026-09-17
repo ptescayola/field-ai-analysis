@@ -24,7 +24,7 @@ const { containerRef, loading, loadError, basemapMode, setBasemapMode } =
 </script>
 
 <template>
-  <section class="field-map">
+  <section class="field-map ui-enter ui-enter--map">
     <div class="field-map-head">
       <h2>{{ title }}</h2>
       <p v-if="loadError" class="field-map-error">{{ loadError }}</p>

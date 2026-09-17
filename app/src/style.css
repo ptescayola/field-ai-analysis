@@ -38,9 +38,14 @@
   box-sizing: border-box;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
+  overflow-x: clip;
   font-family: var(--font);
   color: var(--text);
   background: var(--bg);
@@ -67,4 +72,70 @@ button {
 button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+@keyframes ui-enter-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ui-enter {
+  animation: ui-enter-fade-up var(--ui-enter-duration, 420ms)
+    cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--ui-enter-delay, 0ms);
+}
+
+.ui-enter--map {
+  --ui-enter-delay: 72ms;
+}
+
+.ui-enter--panel {
+  --ui-enter-duration: 400ms;
+}
+
+.ui-enter--forecast-block {
+  --ui-enter-delay: 200ms;
+  --ui-enter-duration: 380ms;
+}
+
+.ui-enter-stagger {
+  --ui-enter-base: 88ms;
+  --ui-enter-step: 42ms;
+  --ui-enter-duration: 380ms;
+  animation: ui-enter-fade-up var(--ui-enter-duration)
+    cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(
+    var(--ui-enter-base, 0ms) + var(--ui-enter-i, 0) * var(--ui-enter-step, 42ms)
+  );
+}
+
+.ui-enter-stagger--forecast-day {
+  --ui-enter-base: 0ms;
+  --ui-enter-step: 34ms;
+  --ui-enter-duration: 340ms;
+  animation-name: ui-enter-fade;
+}
+
+@keyframes ui-enter-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-enter,
+  .ui-enter-stagger {
+    animation: none !important;
+  }
 }

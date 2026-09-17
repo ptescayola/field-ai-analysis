@@ -89,7 +89,11 @@ async function runAnalysis(): Promise<void> {
       />
 
       <EmptyState v-if="loadingField" message="Loading field data…" />
-      <FieldPanel v-else-if="fieldData" :field="fieldData" />
+      <FieldPanel
+        v-else-if="fieldData"
+        :key="selectedFile"
+        :field="fieldData"
+      />
     </template>
   </AppLayout>
 </template>

@@ -6,6 +6,8 @@ import FieldDataTile, {
 } from "./FieldDataTile.vue"
 import ScoreRing from "./analysis/ScoreRing.vue"
 import { healthScoreTone } from "../utils/metric-visualization"
+import { agronomistIconUrl } from "../utils/agronomist-icons"
+import { riskIconUrl } from "../utils/risk-icons"
 import type {
   AnalysisOutput,
   FieldData,
@@ -69,6 +71,7 @@ const riskTiles = computed((): FieldDataTileModel[] =>
     highlightSeverity: risk.severity,
     footer: risk.evidence.trim() ? [risk.evidence.trim()] : [],
     footerAlign: "start",
+    iconSrc: riskIconUrl(risk.type),
   })),
 )
 
@@ -130,6 +133,7 @@ function agronomistTile(
       .filter((line): line is string => Boolean(line?.trim()))
       .map((line) => line.trim()),
     footerAlign: "start",
+    iconSrc: agronomistIconUrl(id),
   }
 }
 
@@ -356,6 +360,7 @@ function formatVegetationType(type: string): string {
           :capitalize-highlight="tile.capitalizeHighlight"
           :highlight-severity="tile.highlightSeverity"
           :footer-align="tile.footerAlign"
+          :icon-src="tile.iconSrc"
         />
       </div>
 
@@ -396,6 +401,7 @@ function formatVegetationType(type: string): string {
           :capitalize-highlight="tile.capitalizeHighlight"
           :highlight-severity="tile.highlightSeverity"
           :footer-align="tile.footerAlign"
+          :icon-src="tile.iconSrc"
         />
       </div>
       <p v-else class="empty">None identified</p>

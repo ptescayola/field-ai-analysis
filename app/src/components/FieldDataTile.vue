@@ -23,6 +23,7 @@ export type FieldDataTileModel = {
   analyst?: FieldDataTileAnalyst
   highlightSeverity?: HighlightSeverity
   footerAlign?: "center" | "start"
+  iconSrc?: string
 }
 
 withDefaults(
@@ -37,6 +38,7 @@ withDefaults(
     analyst?: FieldDataTileAnalyst
     highlightSeverity?: HighlightSeverity
     footerAlign?: "center" | "start"
+    iconSrc?: string
   }>(),
   {
     footer: () => [],
@@ -56,6 +58,9 @@ function footerAccentClass(accent: "up" | "down" | undefined): string | undefine
 
 <template>
   <article class="field-data-tile">
+    <div v-if="iconSrc" class="field-data-tile-icon">
+      <img :src="iconSrc" alt="" width="32" height="32" decoding="async" />
+    </div>
     <span class="field-data-tile-label">{{ label }}</span>
     <p
       class="field-data-tile-highlight"
@@ -116,6 +121,19 @@ function footerAccentClass(accent: "up" | "down" | undefined): string | undefine
   min-width: 0;
 }
 
+.field-data-tile-icon {
+  display: flex;
+  justify-content: center;
+  margin: 0.75rem 0 0.8rem;
+}
+
+.field-data-tile-icon img {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
 .field-data-tile-label {
   font-size: 0.62rem;
   font-weight: 600;
@@ -128,7 +146,6 @@ function footerAccentClass(accent: "up" | "down" | undefined): string | undefine
 .field-data-tile-highlight {
   flex: 1;
   display: flex;
-  align-items: center;
   justify-content: center;
   margin: 0.35rem 0 0.15rem;
   font-family: var(--font-display);

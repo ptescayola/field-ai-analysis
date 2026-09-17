@@ -18,7 +18,10 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="field-workflow" aria-label="Field selection and analysis">
+  <section
+    class="field-workflow ui-enter"
+    aria-label="Field selection and analysis"
+  >
     <FieldSelector
       inline
       :fields="fields"
