@@ -1,3 +1,5 @@
+import { normalizeUnderscoreKey, underscoreToSpaces } from "./string"
+
 export type MetricTone = "low" | "neutral" | "high"
 
 export interface ParsedMetric {
@@ -22,11 +24,11 @@ const METRIC_LABELS: Record<string, string> = {
 
 function metricLabel(metric: string): string {
   const key = metric.trim().toLowerCase()
-  return METRIC_LABELS[key] ?? metric.replaceAll("_", " ")
+  return METRIC_LABELS[key] ?? underscoreToSpaces(metric)
 }
 
 function assessmentTone(assessment: string): MetricTone {
-  const key = assessment.trim().toLowerCase().replaceAll("_", " ")
+  const key = normalizeUnderscoreKey(assessment)
   if (["low", "moderately low", "decreasing"].includes(key)) return "low"
   if (["high", "moderately high", "increasing", "anomalous"].includes(key)) {
     return "high"

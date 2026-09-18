@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue"
+import { computed } from "vue"
 import FieldSnapshotCharts from "./analysis/FieldSnapshotCharts.vue"
 import FieldDataTile, {
   type FieldDataTileModel,
@@ -8,6 +8,7 @@ import ScoreRing from "./analysis/ScoreRing.vue"
 import { healthScoreTone } from "../utils/metric-visualization"
 import { agronomistIconUrl } from "../utils/agronomist-icons"
 import { riskIconUrl } from "../utils/risk-icons"
+import { formatLabel } from "../utils/string"
 import type {
   AnalysisOutput,
   FieldData,
@@ -23,33 +24,6 @@ const props = defineProps<{
   field?: FieldData | null
 }>()
 
-const narrativeExpanded = ref(false)
-
-const coordinatorNarrative = computed(() => {
-  const summary = props.result.summary.trim()
-  const explanation = props.result.explanation.trim()
-
-  if (!explanation) return summary
-  if (!summary) return explanation
-  if (summary === explanation) return summary
-  if (explanation.startsWith(summary)) return explanation
-
-  return `${summary}\n\n${explanation}`
-})
-
-const narrativeNeedsExpand = computed(() => {
-  const text = coordinatorNarrative.value
-  if (!text) return false
-  const lineBreaks = (text.match(/\n/g) ?? []).length
-  return text.length > 220 || lineBreaks >= 1
-})
-
-function formatRiskType(type: string): string {
-  return type
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase())
-}
-
 function severityClass(severity: Risk["severity"]): string {
   return `severity-${severity}`
 }
@@ -62,10 +36,18 @@ const healthTone = computed(() =>
   healthScoreTone(props.result.field_health_score),
 )
 
+const healthUplift = computed(
+  () => props.result.recommendation_health_uplift_pct ?? 0,
+)
+
+const projectedFieldHealth = computed(() =>
+  Math.min(100, props.result.field_health_score + healthUplift.value),
+)
+
 const riskTiles = computed((): FieldDataTileModel[] =>
   props.result.agents.risk_analyst.risks.map((risk, index) => ({
     id: `${risk.type}-${index}`,
-    label: formatRiskType(risk.type),
+    label: formatLabel(risk.type),
     highlight: risk.severity,
     capitalizeHighlight: true,
     highlightSeverity: risk.severity,
@@ -150,14 +132,14 @@ const agronomistTiles = computed((): FieldDataTileModel[] => {
     agronomistTile(
       "irrigation",
       "Irrigation",
-      formatRiskType(irrigation.status),
+      formatLabel(irrigation.status),
       IRRIGATION_TONES[irrigation.status],
       [irrigationExtra, irrigation.timing, irrigation.assessment],
     ),
     agronomistTile(
       "stress",
       "Stress",
-      formatRiskType(crop_stress.level),
+      formatLabel(crop_stress.level),
       STRESS_TONES[crop_stress.level],
       [
         crop_stress.drivers.length
@@ -169,14 +151,14 @@ const agronomistTiles = computed((): FieldDataTileModel[] => {
     agronomistTile(
       "development",
       "Development",
-      formatRiskType(crop_development.stage_assessment),
+      formatLabel(crop_development.stage_assessment),
       STAGE_TONES[crop_development.stage_assessment],
       [crop_development.assessment],
     ),
     agronomistTile(
       "health",
       "Health",
-      formatRiskType(plant_health.rating),
+      formatLabel(plant_health.rating),
       HEALTH_TONES[plant_health.rating],
       [plant_health.assessment],
     ),
@@ -184,7 +166,7 @@ const agronomistTiles = computed((): FieldDataTileModel[] => {
 })
 
 function formatCategory(category: string): string {
-  return formatRiskType(category)
+  return formatLabel(category)
 }
 
 const VEGETATION_LABELS: Record<string, string> = {
@@ -197,7 +179,7 @@ const VEGETATION_LABELS: Record<string, string> = {
 }
 
 function formatVegetationType(type: string): string {
-  return VEGETATION_LABELS[type] ?? formatRiskType(type)
+  return VEGETATION_LABELS[type] ?? formatLabel(type)
 }
 </script>
 
@@ -287,33 +269,31 @@ function formatVegetationType(type: string): string {
     </article>
 
     <section class="dashboard">
-      <div
-        class="hero"
-        :class="
-          result.irrigation.should_irrigate_next_48h
-            ? 'irrigate-yes'
-            : 'irrigate-no'
-        "
-      >
-        <p class="eyebrow">Irrigate in the next 48h?</p>
-        <p class="verdict">
-          {{ result.irrigation.should_irrigate_next_48h ? "Yes" : "No" }}
+      <div class="hero">
+        <div class="hero-head">
+          <h2 class="hero-title">Recommendation</h2>
+          <p
+            v-if="healthUplift > 0"
+            class="hero-uplift"
+            title="Coordinator estimate if the main recommendation is followed in time; not a measured outcome."
+          >
+            <span class="hero-uplift-value">+{{ healthUplift }}%</span>
+            field health potential
+          </p>
+        </div>
+        <p class="hero-recommendation">{{ result.main_recommendation }}</p>
+        <p v-if="healthUplift > 0" class="hero-uplift-footnote">
+          Est. field health up to {{ Math.round(projectedFieldHealth) }}% (from
+          {{ Math.round(result.field_health_score) }}%)
         </p>
-        <p class="rationale">{{ result.main_recommendation }}</p>
       </div>
 
       <div class="dashboard-scores">
         <ScoreRing
           label="Field health"
           :value="result.field_health_score"
-          suffix="/100"
-          :tone="healthTone"
-        />
-        <ScoreRing
-          label="Confidence"
-          :value="result.confidence * 100"
           suffix="%"
-          tone="neutral"
+          :tone="healthTone"
         />
       </div>
     </section>
@@ -324,31 +304,8 @@ function formatVegetationType(type: string): string {
       :data-analyst-observations="result.agents.data_analyst.observations"
     />
 
-    <section class="card summary-card">
-      <h2>Summary</h2>
-      <p
-        class="summary-text"
-        :class="{ 'summary-text--clamped': !narrativeExpanded }"
-      >
-        {{ coordinatorNarrative }}
-      </p>
-      <button
-        v-if="narrativeNeedsExpand"
-        type="button"
-        class="read-more"
-        @click="narrativeExpanded = !narrativeExpanded"
-      >
-        {{ narrativeExpanded ? "Show less" : "Read more" }}
-      </button>
-    </section>
-
     <article class="card agronomist-panel">
-      <div class="agronomist-header">
-        <h2>Agronomist</h2>
-        <span class="conf">
-          Confidence {{ formatPercent(agronomist.confidence) }}
-        </span>
-      </div>
+      <h2 class="agronomist-title">Agronomist</h2>
 
       <div class="agronomist-tiles">
         <FieldDataTile
@@ -445,81 +402,64 @@ function formatVegetationType(type: string): string {
 
 .hero {
   border-radius: var(--radius);
-  padding: 1.5rem;
+  padding: 1.25rem 1.35rem;
   color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 
-.irrigate-no {
-  background: var(--green-pale);
-  border: 1px solid #95d5b2;
+.hero-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.65rem;
 }
 
-.irrigate-yes {
-  background: var(--amber-pale);
-  border: 1px solid #ffc971;
-}
-
-.eyebrow {
+.hero-title {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
 }
 
-.verdict {
-  margin: 0.25rem 0;
-  font-family: var(--font-display);
-  font-size: 2.5rem;
+.hero-uplift {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
-.rationale {
+.hero-uplift-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--green);
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-recommendation {
   margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.hero-uplift-footnote {
+  margin: 0.75rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .analyst-panel h2 {
   margin: 0 0 0.75rem;
   font-size: 1.15rem;
-}
-
-.summary-card h2 {
-  margin: 0 0 0.75rem;
-}
-
-.summary-text {
-  margin: 0;
-  font-size: 0.85rem;
-  line-height: 1.6;
-  white-space: pre-line;
-}
-
-.summary-text--clamped {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.read-more {
-  display: block;
-  width: 100%;
-  margin-top: 0.85rem;
-  padding: 0.35rem 0.5rem;
-  border: none;
-  background: transparent;
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--green);
-  text-align: center;
-  cursor: pointer;
-}
-
-.read-more:hover {
-  text-decoration: underline;
 }
 
 .risk-tiles {
@@ -596,27 +536,13 @@ function formatVegetationType(type: string): string {
   color: var(--red);
 }
 
-.conf {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-left: auto;
-}
-
 .empty {
   color: var(--text-muted);
   font-size: 0.9rem;
 }
 
-.agronomist-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.85rem;
-}
-
-.agronomist-header h2 {
-  margin: 0;
+.agronomist-title {
+  margin: 0 0 0.85rem;
   font-size: 1.15rem;
 }
 

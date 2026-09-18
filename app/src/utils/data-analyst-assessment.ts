@@ -1,3 +1,5 @@
+import { formatLabel, normalizeUnderscoreKey } from "./string"
+
 export type AssessmentTone = "low" | "neutral" | "high"
 
 const ASSESSMENT_COPY: Record<string, { label: string; hint: string }> = {
@@ -26,27 +28,19 @@ const ASSESSMENT_COPY: Record<string, { label: string; hint: string }> = {
   },
 }
 
-function normalizeKey(value: string): string {
-  return value.trim().toLowerCase().replaceAll("_", " ")
-}
-
 export function formatAssessment(assessment: string): {
   label: string
   hint: string
 } {
-  const key = normalizeKey(assessment)
+  const key = normalizeUnderscoreKey(assessment)
   const copy = ASSESSMENT_COPY[key]
   if (copy) return copy
 
-  const label = assessment
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase())
-
-  return { label, hint: "Assessment from field data analysis" }
+  return { label: formatLabel(assessment), hint: "Assessment from field data analysis" }
 }
 
 export function assessmentTone(assessment: string): AssessmentTone {
-  const key = normalizeKey(assessment)
+  const key = normalizeUnderscoreKey(assessment)
   if (["low", "moderately low", "decreasing"].includes(key)) return "low"
   if (["high", "moderately high", "increasing", "anomalous"].includes(key)) {
     return "high"
@@ -70,7 +64,7 @@ export type DataAnalystObservation = {
 }
 
 function metricKey(metric: string): string {
-  return metric.trim().toLowerCase().replaceAll("_", " ")
+  return normalizeUnderscoreKey(metric)
 }
 
 const TILE_METRIC_CANDIDATES: Record<string, string[]> = {

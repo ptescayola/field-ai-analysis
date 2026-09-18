@@ -66,8 +66,7 @@ management, not risk inventory.
 - Return at most three actions, the most important first.
 - Set `recommended_mm` to `null` when no irrigation is advised or when you
   cannot estimate a dose. Treat any dose as indicative, not a prescription.
-- Never invent data. Missing or unreliable inputs go in `data_gaps` and must
-  lower `confidence`.
+- Never invent data. Missing or unreliable inputs go in `data_gaps`.
 - Keep each `assessment` to one or two sentences.
 
 ## Output format
@@ -104,7 +103,6 @@ Respond with JSON only:
     }
   ],
   "data_gaps": ["No root-depth moisture reading"],
-  "confidence": 0.7,
   "reasoning": "string"
 }
 ```
@@ -115,4 +113,3 @@ Respond with JSON only:
 `ahead`, `unknown`.
 `plant_health.rating` must be one of: `poor`, `fair`, `good`, `excellent`.
 `actions[].priority` must be one of: `low`, `medium`, `high`.
-`confidence` must be a number between 0 and 1.

@@ -62,7 +62,6 @@ export interface Risk {
   type: string
   severity: "low" | "medium" | "high"
   evidence: string
-  confidence: number
 }
 
 export interface SelectedImage {
@@ -136,23 +135,20 @@ export interface AgronomistOutput {
   }
   actions: AgronomicAction[]
   data_gaps: string[]
-  confidence: number
   reasoning: string
 }
 
 export interface AnalysisOutput {
   field_id: string
   field_name: string
-  summary: string
   field_health_score: number
+  recommendation_health_uplift_pct: number
   main_recommendation: string
   irrigation: {
     should_irrigate_next_48h: boolean
     rationale: string
   }
   risks: Risk[]
-  explanation: string
-  confidence: number
   agents: {
     data_analyst: {
       observations: Array<{

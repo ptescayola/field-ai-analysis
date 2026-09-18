@@ -6,6 +6,7 @@ import FieldDataTile, {
 } from "./FieldDataTile.vue"
 import WeatherForecastView from "./WeatherForecastView.vue"
 import { formatShortDate } from "../utils/intl-dates"
+import { underscoreToSpaces } from "../utils/string"
 import type { FieldData } from "../types"
 
 const props = defineProps<{
@@ -19,10 +20,6 @@ const { forecast, loading, error, rainNext7Days } = useWeatherForecast(
   latitude,
   longitude,
 )
-
-function formatCropName(value: string): string {
-  return value.replaceAll("_", " ")
-}
 
 const fieldDataTiles = computed((): FieldDataTileModel[] => {
   const field = props.field
@@ -41,10 +38,10 @@ const fieldDataTiles = computed((): FieldDataTileModel[] => {
     {
       id: "crop",
       label: "Crop",
-      highlight: formatCropName(field.crop.type),
+      highlight: underscoreToSpaces(field.crop.type),
       footer: [
-        formatCropName(field.crop.variety),
-        formatCropName(field.crop.growth_stage),
+        underscoreToSpaces(field.crop.variety),
+        underscoreToSpaces(field.crop.growth_stage),
       ],
       capitalizeHighlight: true,
       capitalizeFooter: true,
@@ -72,7 +69,7 @@ const fieldDataTiles = computed((): FieldDataTileModel[] => {
     {
       id: "soil",
       label: "Soil",
-      highlight: formatCropName(field.soil.type),
+      highlight: underscoreToSpaces(field.soil.type),
       footer: [
         `${field.soil.moisture_percent}% moisture`,
         `${field.soil.temperature_c}°C soil · pH ${field.soil.ph}`,

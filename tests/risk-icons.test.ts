@@ -13,3 +13,12 @@ it("maps known risk types to icon paths", () => {
 it("normalizes spaced risk type labels", () => {
   assert.equal(riskIconKey("Extreme Weather"), "extreme_weather")
 })
+
+it("maps root zone limitation and aliases", () => {
+  assert.equal(riskIconKey("root_zone_limitation"), "root_zone_limitation")
+  assert.equal(
+    riskIconUrl("root_zone_limitation"),
+    "/icons/risk/root_zone_limitation.png",
+  )
+  assert.equal(riskIconKey("shallow_root_zone"), "root_zone_limitation")
+})

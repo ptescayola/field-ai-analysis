@@ -1,10 +1,10 @@
 import type { ImageAnalystOutput } from "../../domain/analysis/image-analyst.schema.js"
 import type { ParsedCoordinates } from "../../domain/field/coordinates-from-filename.js"
 import type { FieldData } from "../../domain/field/field.schema.js"
+import { underscoreToSpaces } from "../../domain/string.js"
 
 function formatObservation(category: string, observation: string): string {
-  const label = category.replaceAll("_", " ")
-  return `[Image] ${label}: ${observation}`
+  return `[Image] ${underscoreToSpaces(category)}: ${observation}`
 }
 
 function resolveCropType(imageAnalysis: ImageAnalystOutput): string {

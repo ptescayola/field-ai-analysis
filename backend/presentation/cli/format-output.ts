@@ -1,14 +1,5 @@
 import type { AnalysisOutput } from "../../domain/analysis/analysis.schema.js"
-
-function formatPercent(value: number): string {
-  return `${Math.round(value * 100)}%`
-}
-
-function formatLabel(value: string): string {
-  return value
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase())
-}
+import { formatLabel } from "../../domain/string.js"
 
 function formatRiskList(risks: AnalysisOutput["risks"]): string {
   if (risks.length === 0) {
@@ -18,7 +9,7 @@ function formatRiskList(risks: AnalysisOutput["risks"]): string {
   return risks
     .map(
       (risk) =>
-        `  • ${formatLabel(risk.type)} (${risk.severity}, confidence ${formatPercent(risk.confidence)})\n    ${risk.evidence}`,
+        `  • ${formatLabel(risk.type)} (${risk.severity})\n    ${risk.evidence}`,
     )
     .join("\n")
 }
@@ -38,7 +29,6 @@ function formatAgronomist(
     `  Stress: ${formatLabel(agronomist.crop_stress.level)}${drivers ? ` — ${drivers}` : ""}`,
     `  Development: ${formatLabel(agronomist.crop_development.stage_assessment)}`,
     `  Health: ${formatLabel(agronomist.plant_health.rating)}`,
-    `  Confidence: ${formatPercent(agronomist.confidence)}`,
   ]
 
   if (agronomist.actions.length > 0) {
@@ -69,12 +59,10 @@ export function formatAnalysis(analysis: AnalysisOutput): string {
     "=================",
     "",
     `Field: ${analysis.field_name} (${analysis.field_id})`,
-    `Field health: ${analysis.field_health_score}/100`,
-    `Confidence: ${formatPercent(analysis.confidence)}`,
-    "",
-    "Summary",
-    "-------",
-    analysis.summary,
+    `Field health: ${Math.round(analysis.field_health_score)}%` +
+      (analysis.recommendation_health_uplift_pct > 0
+        ? ` (+${analysis.recommendation_health_uplift_pct}% est. if recommendation followed)`
+        : ""),
     "",
     "Irrigate in the next 48h?",
     "-------------------------",
@@ -88,10 +76,6 @@ export function formatAnalysis(analysis: AnalysisOutput): string {
     "Risks",
     "-----",
     formatRiskList(analysis.risks),
-    "",
-    "Explanation",
-    "-----------",
-    analysis.explanation,
     "",
     "Observations — Data Analyst",
     "----------------------------",

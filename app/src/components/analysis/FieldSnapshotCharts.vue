@@ -16,6 +16,7 @@ import {
 } from "../../utils/data-analyst-assessment"
 import type { FieldData } from "../../types"
 import type { FieldDataTileAnalyst } from "../FieldDataTile.vue"
+import { formatLabel } from "../../utils/string"
 
 const props = defineProps<{
   field: FieldData
@@ -50,10 +51,6 @@ const { rainNext7Days, maxTempNext7Days } = useWeatherForecast(
 const ndviDelta = computed(
   () => props.field.vegetation.ndvi - props.field.vegetation.ndvi_previous_week,
 )
-
-function formatLabel(value: string): string {
-  return value.replaceAll("_", " ")
-}
 
 const ndviDeltaLabel = computed(() => {
   const d = ndviDelta.value

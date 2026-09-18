@@ -49,7 +49,6 @@ const outputs: Record<string, unknown> = {
         type: "water_stress",
         severity: "medium",
         evidence: "Low soil moisture",
-        confidence: 0.8,
       },
     ],
   },
@@ -82,12 +81,11 @@ const outputs: Record<string, unknown> = {
       },
     ],
     data_gaps: [],
-    confidence: 0.8,
     reasoning: "Soil moisture is low",
   },
   coordinator: {
-    summary: "The field needs irrigation.",
     field_health_score: 72,
+    recommendation_health_uplift_pct: 10,
     main_recommendation: "Irrigate within 24 hours.",
     irrigation: {
       should_irrigate_next_48h: true,
@@ -98,11 +96,8 @@ const outputs: Record<string, unknown> = {
         type: "water_stress",
         severity: "medium",
         evidence: "Low soil moisture",
-        confidence: 0.8,
       },
     ],
-    explanation: "The agents agree that water stress is the main concern.",
-    confidence: 0.86,
   },
 }
 

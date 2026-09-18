@@ -7,7 +7,6 @@ export const riskSchema = z.object({
   type: z.string(),
   severity: severitySchema,
   evidence: z.string(),
-  confidence: z.number().min(0).max(1),
 })
 
 export const observationSchema = z.object({
@@ -72,7 +71,6 @@ export const agronomistOutputSchema = z.object({
   }),
   actions: z.array(agronomicActionSchema),
   data_gaps: z.array(z.string()),
-  confidence: z.number().min(0).max(1),
   reasoning: z.string(),
 })
 
@@ -83,16 +81,14 @@ export const riskAnalystOutputSchema = z.object({
 export const analysisOutputSchema = z.object({
   field_id: z.string(),
   field_name: z.string(),
-  summary: z.string(),
   field_health_score: z.number().min(0).max(100),
+  recommendation_health_uplift_pct: z.number().min(0).max(25),
   main_recommendation: z.string(),
   irrigation: z.object({
     should_irrigate_next_48h: z.boolean(),
     rationale: z.string(),
   }),
   risks: z.array(riskSchema),
-  explanation: z.string(),
-  confidence: z.number().min(0).max(1),
   agents: z.object({
     data_analyst: dataAnalystOutputSchema,
     agronomist: agronomistOutputSchema,
