@@ -31,7 +31,9 @@ function ndviTrend(delta: number): FieldMetrics["ndvi_trend"] {
   return "stable"
 }
 
-function sumRain(days: FieldData["weather"]["forecast"]): number {
+type ForecastDay = NonNullable<FieldData["weather"]["forecast"]>[number]
+
+function sumRain(days: ForecastDay[]): number {
   return round(
     days.reduce((total, day) => total + day.rain_mm, 0),
     1,
@@ -42,7 +44,7 @@ export function deriveFieldMetrics(
   field: FieldData,
   now = new Date(),
 ): FieldMetrics {
-  const forecast = field.weather.forecast
+  const forecast = field.weather.forecast ?? []
   const next48h = forecast.slice(0, 2)
   const delta = round(
     field.vegetation.ndvi - field.vegetation.ndvi_previous_week,

@@ -31,7 +31,7 @@ export interface FieldData {
     temperature_c: number
     humidity_percent: number
     rain_last_7_days_mm: number
-    forecast: Array<{
+    forecast?: Array<{
       day: string
       rain_mm: number
       max_temperature_c: number

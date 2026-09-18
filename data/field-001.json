@@ -49,7 +49,7 @@
   },
   "crop": {
     "type": "grape",
-    "variety": "unspecified",
+    "variety": "albarino",
     "planting_date": "2019-03-18",
     "growth_stage": "ripening"
   },
@@ -62,15 +62,14 @@
   "weather": {
     "temperature_c": 21,
     "humidity_percent": 84,
-    "rain_last_7_days_mm": 36,
-    "forecast": []
+    "rain_last_7_days_mm": 36
   },
   "vegetation": {
     "ndvi": 0.79,
     "ndvi_previous_week": 0.8
   },
   "observations": [
-    "Parcel boundary from OpenStreetMap (way 1318910132): landuse=vineyard, crop=grape; no finca name or grape variety in the source",
+    "Parcel boundary from OpenStreetMap (way 1318910132): landuse=vineyard, crop=grape; variety albariño assumed for demo (not verified in OSM)",
     "Location: Cuíña, Tremoedo, Vilanova de Arousa, comarca O Salnés (Pontevedra), inside the Rías Baixas denomination",
     "Every soil, weather, NDVI and scouting value below is synthetic demo data, not verified for this polygon",
     "Rain-fed vineyard with no irrigation system installed, so water management is limited to drainage and canopy work",

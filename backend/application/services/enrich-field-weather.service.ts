@@ -24,7 +24,7 @@ export class EnrichFieldWeatherService {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       console.error(
-        `Live weather unavailable (${message}); using field snapshot forecast`,
+        `Live weather unavailable (${message})`,
       )
       return field
     }

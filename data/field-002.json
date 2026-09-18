@@ -41,8 +41,7 @@
   "weather": {
     "temperature_c": 31,
     "humidity_percent": 61,
-    "rain_last_7_days_mm": 1,
-    "forecast": []
+    "rain_last_7_days_mm": 1
   },
   "vegetation": {
     "ndvi": 0.66,

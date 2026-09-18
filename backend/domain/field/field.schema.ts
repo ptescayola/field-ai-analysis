@@ -32,13 +32,15 @@ export const fieldSchema = z.object({
     temperature_c: z.number(),
     humidity_percent: z.number().min(0).max(100),
     rain_last_7_days_mm: z.number().min(0),
-    forecast: z.array(
-      z.object({
-        day: z.string(),
-        rain_mm: z.number().min(0),
-        max_temperature_c: z.number(),
-      }),
-    ),
+    forecast: z
+      .array(
+        z.object({
+          day: z.string(),
+          rain_mm: z.number().min(0),
+          max_temperature_c: z.number(),
+        }),
+      )
+      .optional(),
   }),
   vegetation: z.object({
     ndvi: z.number().min(-1).max(1),

@@ -123,7 +123,6 @@ export function synthesizeFieldFromImage(
       temperature_c: 20,
       humidity_percent: 50,
       rain_last_7_days_mm: 0,
-      forecast: [],
     },
     vegetation: {
       ndvi: 0.5,

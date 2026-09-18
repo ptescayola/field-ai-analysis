@@ -117,8 +117,7 @@
   "weather": {
     "temperature_c": 36,
     "humidity_percent": 42,
-    "rain_last_7_days_mm": 0,
-    "forecast": []
+    "rain_last_7_days_mm": 0
   },
   "vegetation": {
     "ndvi": 0.55,

@@ -20,8 +20,10 @@ Focus on:
 
 Return structured observations.
 
-Use `weather.forecast` for rain outlook. It is a live 7-day forecast for the field coordinates.
-For rain in the next 48 hours, sum `rain_mm` from the first two forecast days.
+When `weather.forecast` is present (live Open-Meteo data at analysis time), use it
+for rain outlook. For rain in the next 48 hours, sum `rain_mm` from the first two
+forecast days. If forecast is missing, rely on `derived_metrics` and recent rainfall
+observations instead.
 
 Example observations:
 
